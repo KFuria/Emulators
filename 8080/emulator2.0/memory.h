@@ -6,23 +6,16 @@
 #include <stdlib.h>
 #include <string.h>
 
-typedef struct iMemory
-{
-    // Memory address
-    void * mem;
+typedef uint8_t * iMem;
 
-    //ROM
+iMem iMem_init(size_t size_in_bytes);
 
-    //RAM
+int load_file_into_Mem(const char * filename, uint16_t add);
 
-    //VRAM
+uint8_t iMem_read_byte(uint16_t addr);
 
+void iMem_write_byte(uint16_t addr, uint8_t byte);
 
-} iMemory;
-
-uint8_t* imemory_init(uint8_t size, uint8_t num);
-uint8_t imemory_read_byte(uint16_t addr);
-void imemory_write_byte(uint16_t addr, uint8_t byte);
-void imemory_free(void);
+void iMem_free(void);
 
 #endif

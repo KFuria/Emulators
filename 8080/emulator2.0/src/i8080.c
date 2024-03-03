@@ -19,6 +19,8 @@ i8080 * i8080_init(void){
     cpu->pf = 0;
     cpu->cf = 0;
     
+    cpu->cpu_pointer = cpu; // pointer to this cpu struct in memory
+
     cpu->read_byte = NULL;
     cpu->write_byte = NULL;
     cpu->port_in = NULL;

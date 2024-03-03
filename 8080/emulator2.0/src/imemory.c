@@ -1,12 +1,10 @@
-#include "memory.h"
+#include "imemory.h"
 
 static iMem imem = NULL;
-static size_t mem_size = 0;
 
-iMem iMem_init(size_t size_in_bytes){
-    mem_size = size_in_bytes;
-    imem = malloc(size_in_bytes);
-    memset(imem, 0, size_in_bytes);
+iMem iMem_init(void){
+    imem = malloc(MEM_SIZE);
+    memset(imem, 0, MEM_SIZE);
     if(imem == NULL){
         fprintf(stderr, "Memory not created\n");
     }
@@ -26,7 +24,7 @@ int load_file_into_Mem(const char * filename, uint16_t addr){
     rewind(f);
     printf("File size: %ld\n", fsize);
 
-    if(fsize + addr >= mem_size){
+    if(fsize + addr >= MEM_SIZE){
         fprintf(stderr, "error: file %s can't fit in memory.\n", filename);
         return 1;
     }

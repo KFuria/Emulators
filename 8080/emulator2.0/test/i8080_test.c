@@ -72,12 +72,10 @@ int main(){
     cpu->write_byte = iMem_write_byte;
     cpu->port_in = i8080_hal_io_input;
     cpu->port_out = i8080_hal_io_output;
-    
-
 
     // Run ROM Tests
-    run_test(cpu, "tests/8080PRE.COM");
-    run_test(cpu, "tests/TST8080.COM");
-    run_test(cpu, "tests/CPUTEST.COM");
-    run_test(cpu, "tests/8080EXM.COM");
+    run_test(cpu, "test/ROMs/8080PRE.COM");
+    run_test(cpu, "test/ROMs/TST8080.COM");
+    run_test(cpu, "test/ROMs/CPUTEST.COM");
+    run_test(cpu, "test/ROMs/8080EXM.COM");
 }

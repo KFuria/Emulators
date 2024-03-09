@@ -55,11 +55,11 @@ static inline uint16_t i8080_next_word(i8080 * const cpu) {
 
 // return the parity of byte: 0 for odd, 1 for even
 static inline bool parity(uint8_t val){
-    uint8_t num_of_1 = 0;
-    for(int i = 0; i<8; i++){
-        num_of_1 += ((val >> 1) & 1);
+    uint8_t num1 = 0;
+    for(int i=0; i<8; i++){
+        num1 += ((val>>i) & 1);
     }
-    return !(num_of_1 & 0x1);
+    return (num1 & 1) == 0;
 }
 
 static inline bool carry(uint8_t pos, uint8_t a, uint8_t b, bool cy){

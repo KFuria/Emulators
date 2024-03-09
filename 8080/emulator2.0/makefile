@@ -9,7 +9,7 @@ PATHD = build/depends/
 CC = gcc
 OPT = -O3
 DEPFLAGS = -MT $@ -MD -MP -MF $(PATHD)$*.d # make .d files while compiling
-CFLAGS = -Wall -Wextra -g -I. -I$(PATHI) $(OPT) $(DEPFLAGS)
+CFLAGS = -Wall -Wextra -g -std=c99 -pedantic -I. -I$(PATHI) $(OPT) $(DEPFLAGS)
 
 .PHONY: all clean test
 

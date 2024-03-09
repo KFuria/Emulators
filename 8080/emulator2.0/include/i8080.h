@@ -3,8 +3,9 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
 #include <stdbool.h>
-#include "memory.h"
 
 
 typedef struct i8080
@@ -39,8 +40,9 @@ typedef struct i8080
 } i8080;
 
 i8080 * i8080_init(void);
+void i8080_clear_registers_counters(i8080* const cpu);
 void i8080_step(i8080* const cpu);
 void i8080_interrupt(i8080* const cpu, uint8_t opcode);
-
+void i8080_execute(i8080 * const cpu, uint8_t opcode);
 
 #endif

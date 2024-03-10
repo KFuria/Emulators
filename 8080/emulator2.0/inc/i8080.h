@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include "i8080dis.h"
 
 
 typedef struct i8080

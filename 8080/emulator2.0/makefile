@@ -1,3 +1,17 @@
+ifeq ($(OSTYPE),cygwin)
+	CLEANUP=rm -f
+	MKDIR=mkdir -p
+	TARGET_EXTENSION=out
+else ifeq ($(OS),Windows_NT)
+	CLEANUP=del /F /Q
+	MKDIR=mkdir
+	TARGET_EXTENSION=exe
+else
+	CLEANUP=rm -f
+	MKDIR=mkdir -p
+	TARGET_EXTENSION=out
+endif
+
 TBIN = i8080_test
 PATHb = bin/
 PATHS = src/
@@ -25,9 +39,9 @@ TEST_OBJS = $(TEST_CFILES:$(PATHT)%.c=$(PATHO)%.o)
 TEST_DEPENDS = $(TEST_CFILES:$(PATHT)%.c=$(PATHD)%.d)
 
 # emulator and 8080 test build
-test: $(BUILD_PATHS) $(PATHb)$(TBIN)
+test: $(BUILD_PATHS) $(PATHb)$(TBIN).$(TARGET_EXTENSION)
 
-$(PATHb)$(TBIN): $(SRC_OBJS) $(TEST_OBJS)
+$(PATHb)$(TBIN).$(TARGET_EXTENSION): $(SRC_OBJS) $(TEST_OBJS)
 	$(CC) -o $@ $^
 
 $(PATHO)%.o: $(PATHS)%.c
@@ -43,18 +57,23 @@ all:
 
 # Make directories if they don't exist
 $(PATHB):
-	mkdir -p $(PATHB)
+	$(MKDIR) $(PATHB)
 
 $(PATHD):
-	mkdir -p $(PATHD)
+	$(MKDIR) $(PATHD)
 
 $(PATHO):
-	mkdir -p $(PATHO)
+	$(MKDIR) $(PATHO)
 
 $(PATHb):
-	mkdir -p $(PATHb)
+	$(MKDIR) $(PATHb)
 
 clean: 
-	rm -rf $(PATHb)$(TBIN) $(SRC_OBJS) $(TEST_OBJS) $(SRC_DEPENDS) $(TEST_DEPENDS)
+	$(CLEANUP) $(PATHb)$(TBIN).$(TARGET_EXTENSION) $(SRC_OBJS) $(TEST_OBJS) $(SRC_DEPENDS) $(TEST_DEPENDS)
+
+
+.PRECIOUS: $(PATHb)$(TBIN).$(TARGET_EXTENSION)
+.PRECIOUS: $(PATHO)%.o
+.PRECIOUS: $(PATHD)%.d
 
 -include $(SRC_DEPENDS) $(TEST_DEPENDS)

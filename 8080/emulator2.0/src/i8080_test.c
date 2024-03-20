@@ -74,8 +74,8 @@ int main(){
     cpu->port_out = i8080_hal_io_output;
 
     // Run ROM Tests
-    run_test(cpu, "test/ROMs/8080PRE.COM");
-    run_test(cpu, "test/ROMs/TST8080.COM");
-    run_test(cpu, "test/ROMs/CPUTEST.COM");
-    run_test(cpu, "test/ROMs/8080EXM.COM");
+    run_test(cpu, "src/ROMs/8080PRE.COM");
+    run_test(cpu, "src/ROMs/TST8080.COM");
+    run_test(cpu, "src/ROMs/CPUTEST.COM");
+    run_test(cpu, "src/ROMs/8080EXM.COM");
 }

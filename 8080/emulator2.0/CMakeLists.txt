@@ -9,8 +9,8 @@ project(emu8080
 set(SOURCES
   src/i8080.c
   src/i8080dis.c
-  test/i8080_hal.c
-  test/i8080_test.c
+  src/i8080_hal.c
+  src/i8080_test.c
 )
 
 add_executable(emu8080 ${SOURCES})
@@ -23,7 +23,7 @@ endif()
 
 target_include_directories(emu8080 PRIVATE
   inc/
-  test/
+  src/
 )
 
 set(ROMS_DIR "${CMAKE_SOURCE_DIR}/ROMs/" CACHE STRING "Path to directory containing rom files")

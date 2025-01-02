@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdbool.h>
-#include "utils.h"
+#include "utils.c"
 #include "i8080dis.h"
 #include "i8080.h"
 #include "i8080_hal.h"

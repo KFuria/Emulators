@@ -19,6 +19,7 @@ CPPFILES= 	main.cpp	 \
 			chip8.cpp	 \
 			cpu.cpp		 \
 			displaySDL.cpp \
+			keyboardSDL.cpp	\
 			
 			
 # Create obj files names from source files

@@ -13,9 +13,8 @@ class TDisplaySDL : public TDisplayInterface{
     SDL_Renderer* renderer{};
     SDL_Texture* texture{};
 
-    uint8_t red{};
-    uint8_t green{};
-    uint8_t blue{};
+    uint32_t rgb_ON;
+    uint32_t rgb_OFF;
     uint32_t* textureBuffer;
 
     int height;

@@ -74,7 +74,7 @@ void TChip8::init(std::string rom_path){
     cpu->init();
 
     //Inite display
-    display->init("CHIP-8 EMU", SCREEN_WIDTH, SCREEN_HEIGHT, displayScale);
+    display->init("CHIP-8 EMU", SCREEN_WIDTH, SCREEN_HEIGHT, DISPLAYSCALE);
 
     // Load ROM in memory
     TChip8::loadRom(rom_path, memory + PRGRM_START_ADDR);
@@ -84,17 +84,17 @@ void TChip8::init(std::string rom_path){
 void TChip8::run(){
     using clock = std::chrono::high_resolution_clock;
     clock::time_point start, end;
-    const std::chrono::milliseconds desired_cycle_time(1);
+    const std::chrono::microseconds desired_cycle_time(1000);
     int display_update_delay_time = 0;
 
     while(emu_running){
         start = clock::now();
-    	cpu->fetch();
-        cpu->execute();
+    	cpu->cycle();
+        
         if(display_update_delay_time >= 20){
-            display_update_delay_time = 0;
             display->update(screen);
-
+            display_update_delay_time = 0;
+            
             // Update timers ~60Hz
         	if(delay_timer > 0)
                 delay_timer--;
@@ -102,14 +102,14 @@ void TChip8::run(){
             if(sound_timer > 0)
                 sound_timer--;
         }
+        keyboard->update(keys, &emu_running);
+        
         end = clock::now();
         std::chrono::duration<double, std::micro> loop_time = end - start;
         auto elapsed_time = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-        
-        auto sleep_time = desired_cycle_time - elapsed_time;
-        if (sleep_time.count() > 0) {
-            std::this_thread::sleep_for(sleep_time);
-        }
+        auto sleep_time = desired_cycle_time - loop_time;
+        auto later = end + sleep_time;
+        std::this_thread::sleep_until(later);
         display_update_delay_time++;
     }
 
@@ -122,4 +122,8 @@ void TChip8::deinit(){
 
 void TChip8::setDisplay(TDisplayInterface* displayInterface){
     display = displayInterface;
+}
+
+void TChip8::setKeyboard(TKeyboard* keyboardInterface){
+    keyboard = keyboardInterface;
 }

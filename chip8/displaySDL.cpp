@@ -5,9 +5,8 @@
 
 TDisplaySDL::TDisplaySDL(uint8_t red, uint8_t green, uint8_t blue){
     logger = TLogger::getInstance();
-    red = red;
-    green = green;
-    blue = blue;
+    rgb_ON = (0xFF << 24) | (red << 16) | (green << 8) | blue;
+    rgb_OFF = 0xFF000000;
 }
 
 TDisplaySDL::~TDisplaySDL(){
@@ -66,7 +65,10 @@ void TDisplaySDL::update(uint8_t buffer[][64]){
     for(auto r = 0; r < height; r++){
         for(auto c = 0; c < width; c++){
             if(buffer[r][c] == 1){
-                textureBuffer[(r*width)+c] = 0xFF | (red << 16) | (green << 8) | blue; 
+                textureBuffer[(r*width)+c] = rgb_ON; 
+            }
+            else{
+                textureBuffer[(r*width)+c] = rgb_OFF;
             }
         }
     }

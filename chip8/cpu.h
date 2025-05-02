@@ -70,8 +70,7 @@ public:
     TCpu(TChip8* machine);
     ~TCpu();
     void init();
-    void fetch();
-    void execute();
+    void cycle();
     void deinit();
 };
 

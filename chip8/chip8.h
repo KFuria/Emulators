@@ -10,6 +10,7 @@
 
 #include "logger.h"
 #include "display.h"
+#include "keyboard.h"
 
 
 #define TOTAL_MEM 4096
@@ -24,6 +25,7 @@
 
 #define SCREEN_WIDTH 64
 #define SCREEN_HEIGHT 32
+#define DISPLAYSCALE 20
 
 #define FONTSET_SIZE 80
 const static uint8_t FONTSET[] = { 
@@ -52,7 +54,8 @@ class TChip8{
 
     TCpu* cpu;
     TDisplayInterface* display;
-    int displayScale = 10;
+
+    TKeyboard* keyboard;
 
     uint8_t memory[TOTAL_MEM];
     uint16_t stack[STACK_SIZE];
@@ -76,6 +79,7 @@ public:
     TChip8();
     ~TChip8();
     void setDisplay(TDisplayInterface* display);
+    void setKeyboard(TKeyboard* keyboardInterface);
     void init(std::string rom_path);
     void run();
     void deinit();

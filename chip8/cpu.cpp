@@ -24,7 +24,8 @@ void TCpu::init(){
     instruction = 0;
 }
 
-void TCpu::fetch(){
+void TCpu::cycle(){
+    // fetch
     opcode = ((uint16_t)chip8->memory[pc] << 8) | chip8->memory[pc+1]; 
     pc += 2;
 
@@ -38,9 +39,8 @@ void TCpu::fetch(){
     // }
     // std::string s = buff.str();
     // logger->log(s, ELogLevel::DEBUG);
-}
 
-void TCpu::execute(){
+    // execute
     instruction = opcode >> 12; //decode
     switch(instruction){
         case 0x0: OP_0();       break;

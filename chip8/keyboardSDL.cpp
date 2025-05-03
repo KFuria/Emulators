@@ -3,10 +3,19 @@
 
 TKeyboardSDL::TKeyboardSDL(){
     logger = TLogger::getInstance();
+    logger->log("Keyboard Constructed", ELogLevel::DEBUG);
 }
 
 TKeyboardSDL::~TKeyboardSDL(){
+    logger->log("Keyboard Destructed", ELogLevel::DEBUG);
+}
 
+void TKeyboardSDL::init(){
+    logger->log("Keyboard Initialized", ELogLevel::DEBUG);
+}
+
+void TKeyboardSDL::deinit(){
+    logger->log("Keyboard Deintialized", ELogLevel::DEBUG);
 }
 
 void TKeyboardSDL::update(uint8_t* keys, bool* running){

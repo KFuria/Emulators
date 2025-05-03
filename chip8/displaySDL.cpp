@@ -7,14 +7,14 @@ TDisplaySDL::TDisplaySDL(uint8_t red, uint8_t green, uint8_t blue){
     logger = TLogger::getInstance();
     rgb_ON = (0xFF << 24) | (red << 16) | (green << 8) | blue;
     rgb_OFF = 0xFF000000;
+    logger->log("Display Constructed", ELogLevel::DEBUG);
 }
 
 TDisplaySDL::~TDisplaySDL(){
-
+    logger->log("Display Destructed", ELogLevel::DEBUG);
 }
 
-void TDisplaySDL::init(char const* title, uint16_t displayWidth, uint16_t displayHeight, uint8_t displayScale)
-{
+void TDisplaySDL::init(char const* title, uint16_t displayWidth, uint16_t displayHeight, uint8_t displayScale){
     height = displayHeight;
     width = displayWidth;
     textureBuffer = new uint32_t [displayWidth*displayHeight]{};
@@ -58,7 +58,15 @@ void TDisplaySDL::init(char const* title, uint16_t displayWidth, uint16_t displa
         displayWidth, 
         displayHeight);
         
-    
+    logger->log("Display Initialized", ELogLevel::DEBUG);
+}
+
+void TDisplaySDL::deinit(){
+    SDL_DestroyTexture(texture);
+	SDL_DestroyRenderer(renderer);
+	SDL_DestroyWindow(window);
+	SDL_Quit();
+    logger->log("Display Deinitialized", ELogLevel::DEBUG);
 }
 
 void TDisplaySDL::update(uint8_t buffer[][64]){
@@ -79,10 +87,3 @@ void TDisplaySDL::update(uint8_t buffer[][64]){
 	SDL_RenderPresent(renderer);
 }
 
-
-void TDisplaySDL::deinit(){
-    SDL_DestroyTexture(texture);
-	SDL_DestroyRenderer(renderer);
-	SDL_DestroyWindow(window);
-	SDL_Quit();
-}

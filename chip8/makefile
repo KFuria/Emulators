@@ -20,6 +20,7 @@ CPPFILES= 	main.cpp	 \
 			cpu.cpp		 \
 			displaySDL.cpp \
 			keyboardSDL.cpp	\
+			soundSDL.cpp
 			
 			
 # Create obj files names from source files

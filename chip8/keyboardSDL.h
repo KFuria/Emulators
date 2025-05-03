@@ -14,7 +14,8 @@ class TKeyboardSDL : public TKeyboard{
 public:
     TKeyboardSDL();
     ~TKeyboardSDL();
-
+    virtual void init() override;
+    virtual void deinit() override;
     virtual void update(uint8_t* keys, bool* running) override;
 };
 

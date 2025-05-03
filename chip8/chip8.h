@@ -11,6 +11,7 @@
 #include "logger.h"
 #include "display.h"
 #include "keyboard.h"
+#include "sound.h"
 
 
 #define TOTAL_MEM 4096
@@ -54,8 +55,8 @@ class TChip8{
 
     TCpu* cpu;
     TDisplayInterface* display;
-
     TKeyboard* keyboard;
+    TSound* sound;
 
     uint8_t memory[TOTAL_MEM];
     uint16_t stack[STACK_SIZE];
@@ -78,11 +79,12 @@ class TChip8{
 public:
     TChip8();
     ~TChip8();
+    void init(std::string rom_path);
+    void deinit();
+    void run();
     void setDisplay(TDisplayInterface* display);
     void setKeyboard(TKeyboard* keyboardInterface);
-    void init(std::string rom_path);
-    void run();
-    void deinit();
+    void setSound(TSound* soundInterface);
 };
 
 

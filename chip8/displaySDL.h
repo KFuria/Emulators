@@ -26,8 +26,8 @@ public:
     TDisplaySDL(uint8_t red, uint8_t green, uint8_t blue);
     ~TDisplaySDL();
     virtual void init(char const* title, uint16_t displayWidth, uint16_t displayHeight, uint8_t displayScale) override; 
-    virtual void update(uint8_t buffer[][64]) override;
     virtual void deinit() override;
+    virtual void update(uint8_t buffer[][64]) override;
 };
 
 #endif

@@ -5,11 +5,12 @@
 
 TCpu::TCpu(TChip8* machine){
     logger = TLogger::getInstance();
-    chip8 = machine;    
+    chip8 = machine;
+    logger->log("CPU Constructed", ELogLevel::DEBUG);    
 }
 
 TCpu::~TCpu(){
-
+    logger->log("CPU Destructed", ELogLevel::DEBUG);
 }
 
 void TCpu::init(){
@@ -22,6 +23,11 @@ void TCpu::init(){
     }
     opcode = 0;
     instruction = 0;
+    logger->log("CPU Initialized", ELogLevel::DEBUG);
+}
+
+void TCpu::deinit(){
+    logger->log("CPU Deinitialized", ELogLevel::DEBUG);
 }
 
 void TCpu::cycle(){
@@ -29,17 +35,19 @@ void TCpu::cycle(){
     opcode = ((uint16_t)chip8->memory[pc] << 8) | chip8->memory[pc+1]; 
     pc += 2;
 
-    // std::stringstream buff;
-    // buff << "PC:" << std::hex << pc << " ";
-    // buff << "SP:" << sp << " ";
-    // buff << "I:" << I << " ";
-    // buff << "OPCODE:" << std::hex << opcode << " ";
-    // for(auto i = 0; i<NUM_REGISTERS; i++){
-    //     buff << "R" << i << ":" << std::to_string(reg[i]) << " ";
-    // }
-    // std::string s = buff.str();
-    // logger->log(s, ELogLevel::DEBUG);
-
+    if(logger->getLogLevel() == ELogLevel::OP){
+        std::stringstream buff;
+        buff << "PC:" << std::hex << pc << " ";
+        buff << "SP:" << sp << " ";
+        buff << "I:" << I << " ";
+        buff << "OPCODE:" << std::hex << opcode << " ";
+        for(auto i = 0; i<NUM_REGISTERS; i++){
+            buff << "R" << i << ":" << std::to_string(reg[i]) << " ";
+        }
+        std::string s = buff.str();
+        logger->log(s, ELogLevel::OP);
+    }
+    
     // execute
     instruction = opcode >> 12; //decode
     switch(instruction){
@@ -64,10 +72,7 @@ void TCpu::cycle(){
 
 }
 
-void TCpu::deinit(){
-
-}
-
+//########## CPU Instructions ############
 
 // 00EZ
 inline void TCpu::OP_0(){
@@ -121,7 +126,6 @@ inline void TCpu::OP_F(){
             logger->log("INVALID CODE: FX" + std::to_string(opcode & 0xFF), ELogLevel::ERROR);
     }
 }
-
 
 // 00E0: Clear the display
 inline void TCpu::OP_00E0(){

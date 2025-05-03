@@ -5,6 +5,8 @@
 
 class TKeyboard{
 public:
+    virtual void init() = 0;
+    virtual void deinit() = 0;
     virtual void update(uint8_t* keys, bool* running) = 0;
 };
 

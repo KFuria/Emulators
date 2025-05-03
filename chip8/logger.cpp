@@ -21,6 +21,7 @@ void TLogger::log(std::string message, ELogLevel level)
             case ELogLevel::WARN: buff += "\033[33m[WARN] "; break;
             case ELogLevel::INFO: buff += "\033[32m[INFO] "; break;
             case ELogLevel::DEBUG: buff += "\033[0m[DEBUG] "; break;
+            case ELogLevel::OP : buff += "\033[36m[OP] "; break;
             default: break;
         }
 
@@ -40,4 +41,8 @@ std::shared_ptr<TLogger> TLogger::getInstance()
         loggerInstance = std::shared_ptr<TLogger>(new TLogger());
 
     return loggerInstance;
+}
+
+ELogLevel TLogger::getLogLevel(){
+    return logLevel;
 }

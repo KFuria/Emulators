@@ -11,7 +11,8 @@ enum class ELogLevel
     ERROR = 1,
     WARN = 2,
     INFO = 3,
-    DEBUG = 4
+    DEBUG = 4,
+    OP = 5
 };
 
 class TLogger
@@ -23,7 +24,7 @@ public:
     TLogger();
     void log(std::string message, ELogLevel logLevel);
     void setLogLevel(ELogLevel logLevel);
-
+    ELogLevel getLogLevel();
     static std::shared_ptr<TLogger> getInstance();
 };
 

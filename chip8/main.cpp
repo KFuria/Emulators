@@ -13,7 +13,7 @@ int main(){
     std::shared_ptr<TLogger> logger = TLogger::getInstance();
     logger->setLogLevel(ELogLevel::DEBUG);
 
-    TDisplaySDL display(0xFF, 0xFF, 0xFF);
+    TDisplaySDL display;
     TKeyboardSDL keyboard;
     TSoundSDL sound;
     TChip8 emulator;
@@ -21,7 +21,8 @@ int main(){
     emulator.setDisplay(&display);
     emulator.setKeyboard(&keyboard);
     emulator.setSound(&sound);
-    emulator.init("roms/games/Pong (1 player).ch8");
+    emulator.init("roms/");
+    emulator.load();
     emulator.run();
     emulator.deinit();
 

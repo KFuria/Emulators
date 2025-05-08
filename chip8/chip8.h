@@ -49,15 +49,20 @@ const static uint8_t FONTSET[] = {
 };
 
 class TCpu;
+class TLoader;
+
 
 class TChip8{
     friend class TCpu;
+    friend class TLoader;
 
     TCpu* cpu;
+    TLoader* loader;
+
     TDisplayInterface* display;
     TKeyboard* keyboard;
     TSound* sound;
-
+    
     uint8_t memory[TOTAL_MEM];
     uint16_t stack[STACK_SIZE];
 
@@ -65,26 +70,35 @@ class TChip8{
     
     uint8_t keys[NUM_KEYS];
     bool key_pressed;
+
+    std::string rom_path;
+
+    std::vector<std::string> file_map;
+    int activeIdx = 0;
+    uint8_t numFiles;
     
     uint8_t delay_timer;
     uint8_t sound_timer;
 
+    bool menu_running;
     bool emu_running;
 
     // Logging
     std::shared_ptr<TLogger> logger;
 
-    void loadRom(std::string& file_path, uint8_t* mem);
+    void loadRom(std::string file_path, uint8_t* mem);
 
 public:
     TChip8();
     ~TChip8();
-    void init(std::string rom_path);
+    void init(std::string root_path);
     void deinit();
+    void load();
     void run();
     void setDisplay(TDisplayInterface* display);
     void setKeyboard(TKeyboard* keyboardInterface);
     void setSound(TSound* soundInterface);
+
 };
 
 

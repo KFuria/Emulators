@@ -7,24 +7,30 @@
 #include "displaysdl.h"
 #include "keyboardSDL.h"
 #include "soundSDL.h"
+#include "loader.h"
 
 int main(){
-
     std::shared_ptr<TLogger> logger = TLogger::getInstance();
-    logger->setLogLevel(ELogLevel::DEBUG);
 
     TDisplaySDL display;
     TKeyboardSDL keyboard;
     TSoundSDL sound;
+    TLoader loader;
     TChip8 emulator;
 
+    loader.setDisplay(&display);
+    loader.setKeyboard(&keyboard);
+    loader.init("roms/");
+    display.init("CHIP-8 EMU", SCREEN_WIDTH, SCREEN_HEIGHT, DISPLAYSCALE);
+    display.createMenuList(loader.getMenuList());
+    loader.run();
     emulator.setDisplay(&display);
     emulator.setKeyboard(&keyboard);
     emulator.setSound(&sound);
-    emulator.init("roms/");
-    emulator.load();
+    emulator.init(loader.getRomPath());
     emulator.run();
     emulator.deinit();
+    loader.deinit();
 
     return 0;
 }

@@ -30,9 +30,8 @@ void TLogger::log(std::string message, ELogLevel level)
     }
 }
 
-void TLogger::setLogLevel(ELogLevel logLevel)
-{
-    logLevel = logLevel;
+void TLogger::setLogLevel(ELogLevel level){
+    logLevel = level;
 }
 
 std::shared_ptr<TLogger> TLogger::getInstance()

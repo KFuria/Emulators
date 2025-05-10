@@ -15,8 +15,7 @@ enum class ELogLevel
     OP = 5
 };
 
-class TLogger
-{
+class TLogger{
     ELogLevel logLevel;
     static std::shared_ptr<TLogger> loggerInstance;
 

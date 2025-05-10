@@ -28,6 +28,14 @@
 #define SCREEN_HEIGHT 32
 #define DISPLAYSCALE 20
 
+#define DESIRED_DISPLAY_FREQ 35     // Hz                        
+#define DESIRED_TIMER_FREQ 60       // Hz                    
+
+#define DESIRED_CYCLE_TIME 1002                          // milliseconds per cycle
+#define CLOCK_SPEED (1000000 / DESIRED_CYCLE_TIME)           // instructions per second
+#define DISPLAY_DELAY_COUNT (CLOCK_SPEED / DESIRED_DISPLAY_FREQ)
+#define TIMER_DELAY_COUNT CLOCK_SPEED / DESIRED_TIMER_FREQ
+
 #define FONTSET_SIZE 80
 const static uint8_t FONTSET[] = { 
     0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
@@ -49,15 +57,10 @@ const static uint8_t FONTSET[] = {
 };
 
 class TCpu;
-class TLoader;
-
 
 class TChip8{
     friend class TCpu;
-    friend class TLoader;
-
     TCpu* cpu;
-    TLoader* loader;
 
     TDisplayInterface* display;
     TKeyboard* keyboard;
@@ -73,14 +76,9 @@ class TChip8{
 
     std::string rom_path;
 
-    std::vector<std::string> file_map;
-    int activeIdx = 0;
-    uint8_t numFiles;
-    
     uint8_t delay_timer;
     uint8_t sound_timer;
 
-    bool menu_running;
     bool emu_running;
 
     // Logging
@@ -93,7 +91,6 @@ public:
     ~TChip8();
     void init(std::string root_path);
     void deinit();
-    void load();
     void run();
     void setDisplay(TDisplayInterface* display);
     void setKeyboard(TKeyboard* keyboardInterface);

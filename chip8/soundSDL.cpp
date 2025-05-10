@@ -46,6 +46,7 @@ void TSoundSDL::init(){
     audioSpec.callback = audioCallback;
     audioSpec.userdata = nullptr;
 
+    logger->log("Connecting to audio device", ELogLevel::INFO);
     if (SDL_OpenAudio(&audioSpec, nullptr) < 0){
         std::string errorSdl(SDL_GetError());
         logger->log("Failed to open audio device: " + errorSdl, ELogLevel::ERROR);

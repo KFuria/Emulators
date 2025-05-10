@@ -12,7 +12,7 @@ TDisplaySDL::~TDisplaySDL(){
     logger->log("Display Destructed", ELogLevel::DEBUG);
 }
 
-void TDisplaySDL::init(char const* title, uint16_t displayWidth, uint16_t displayHeight, uint8_t displayScale, std::vector<std::string>& file_map){
+void TDisplaySDL::init(char const* title, uint16_t displayWidth, uint16_t displayHeight, uint8_t displayScale){
     bufferHeight = displayHeight;
     bufferWidth = displayWidth;
     windowHeight = displayHeight * displayScale;
@@ -63,13 +63,11 @@ void TDisplaySDL::init(char const* title, uint16_t displayWidth, uint16_t displa
         SDL_TEXTUREACCESS_STREAMING, 
         displayWidth, 
         displayHeight);
-    
-    createMenuTextures(file_map);
 
     logger->log("Display Initialized", ELogLevel::DEBUG);
 }
 
-void TDisplaySDL::createMenuTextures(std::vector<std::string>& file_map){
+void TDisplaySDL::createMenuList(std::vector<std::string>& menu_list){
     TTF_Font* menuFont = nullptr;
     setFont(&menuFont, "VCR_OSD_MONO.ttf", 20);
     TTF_Font* titleFont = nullptr; 
@@ -136,11 +134,11 @@ void TDisplaySDL::createMenuTextures(std::vector<std::string>& file_map){
     menuTextures.push_back({texture_subtitle, rectSubtitle});
 
     // Create textures for program list
-    int m = file_map.size();
+    int m = menu_list.size();
     
     for(auto i = 0; i < m; i++){
         SDL_Rect rect;
-        SDL_Surface* surface = TTF_RenderText_Solid(menuFont, file_map[i].c_str(), color);
+        SDL_Surface* surface = TTF_RenderText_Solid(menuFont, menu_list[i].c_str(), color);
         if(!surface){
             std::string errorSurface(TTF_GetError());
             logger->log("Surface creation Error: " + errorSurface, ELogLevel::ERROR);
@@ -166,6 +164,9 @@ void TDisplaySDL::createMenuTextures(std::vector<std::string>& file_map){
 
 void TDisplaySDL::deinit(){
     delete textureBuffer;
+    for(auto m : menuTextures){
+        SDL_DestroyTexture(m.texture);
+    }
     SDL_DestroyTexture(texture_d);
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
@@ -192,7 +193,6 @@ void TDisplaySDL::update_screen(uint8_t buffer[][64]){
 }
 
 void TDisplaySDL::update_menu(int activeIdx){
-    std::cout << activeIdx << "\n";
     SDL_RenderClear(renderer);
     for(int i = 4; i < (int)menuTextures.size(); i++){
         menuTextures[i].rect.y = menu_offset_y + (menuTextures[i].rect.h * (i - 4)) 

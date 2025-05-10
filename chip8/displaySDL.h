@@ -38,16 +38,16 @@ class TDisplaySDL : public TDisplayInterface{
     // Logging
     std::shared_ptr<TLogger> logger;
 
-    void createMenuTextures(std::vector<std::string>& file_map);
     void setFont(TTF_Font** gFont, char const* font, uint8_t fontSize);
 
 public:
     TDisplaySDL();
     ~TDisplaySDL();
-    virtual void init(char const* title, uint16_t displayWidth, uint16_t displayHeight, uint8_t displayScale, std::vector<std::string>& file_map) override; 
+    virtual void init(char const* title, uint16_t displayWidth, uint16_t displayHeight, uint8_t displayScale) override; 
     virtual void deinit() override;
     virtual void update_screen(uint8_t buffer[][64]) override;
     virtual void update_menu(int activeIdx) override;
+    virtual void createMenuList(std::vector<std::string>& menu_list) override;
     virtual void setColor(uint8_t red, uint8_t green, uint8_t blue) override;
 };
 

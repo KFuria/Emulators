@@ -24,6 +24,7 @@ void TCpu::init(){
     opcode = 0;
     instruction = 0;
     logger->log("CPU Initialized", ELogLevel::DEBUG);
+    // logger->setLogLevel(ELogLevel::OP);
 }
 
 void TCpu::deinit(){
@@ -320,6 +321,14 @@ inline void TCpu::OP_DXYN(){
                 chip8->screen[screen_y + i][screen_x + j] ^= 0x1;  //update screen pixel with ^0x1;
             }
         }
+    }
+    if(logger->getLogLevel() == ELogLevel::OP){
+        for(int i = 0; i < SCREEN_HEIGHT; i++){
+            for(int j = 0; j < SCREEN_WIDTH; j++){
+                std::cout << static_cast<int>(chip8->screen[i][j]);
+            }
+            std::cout  << "\n";
+        }   
     }
 }
 

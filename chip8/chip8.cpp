@@ -11,12 +11,10 @@ TChip8::TChip8(){
     sound = nullptr;
     
     cpu = new TCpu(this);
-    loader = new TLoader(this);
 }
 
 TChip8::~TChip8(){
     delete cpu;
-    delete loader;
     logger->log("CHIP8 Destructed", ELogLevel::DEBUG);
 }
 
@@ -43,9 +41,7 @@ void TChip8::loadRom(std::string file_path, uint8_t* mem){
     file.close();
 }
 
-void TChip8::init(std::string root_path){
-    rom_path = root_path;
-
+void TChip8::init(std::string file_path){
     // Clear screen frame buffer
     for(auto i = 0; i < SCREEN_HEIGHT; i++){
         for(auto j = 0; j < SCREEN_WIDTH; j++){
@@ -75,15 +71,12 @@ void TChip8::init(std::string root_path){
     key_pressed = false;
 
     // Initialize components
-    cpu->init();
-    loader->init(rom_path);
-
-    display->init("CHIP-8 EMU", SCREEN_WIDTH, SCREEN_HEIGHT, DISPLAYSCALE, file_map);
-    keyboard->init();
+    cpu->init(); 
     sound->init();
     
-
     logger->log("CHIP8 Initialized", ELogLevel::DEBUG);
+    TChip8::loadRom(file_path, memory + PRGRM_START_ADDR);
+
 }
 
 void TChip8::deinit(){
@@ -91,60 +84,29 @@ void TChip8::deinit(){
     display->deinit();
     keyboard->deinit();
     sound->deinit();
-    loader->deinit();
     logger->log("CHIP8 Deinitialized", ELogLevel::DEBUG);
 }
 
-void TChip8::load(){
-    using clock = std::chrono::high_resolution_clock;
-    clock::time_point start, end;
-    const std::chrono::microseconds desired_cycle_time(1000);
-    int display_update_delay_time = 0;
-    
-    menu_running = true;
-    while(menu_running){
-        start = clock::now();
-
-        // Update menu display
-        if(display_update_delay_time >= 50){
-            loader->update();
-            display->update_menu(activeIdx);
-            display_update_delay_time = 0;
-        }
-
-        keyboard->update(keys, &menu_running);
-        end = clock::now();
-        std::chrono::duration<double, std::micro> loop_time = end - start;
-        auto sleep_time = desired_cycle_time - loop_time;
-        auto later = end + sleep_time;
-        std::this_thread::sleep_until(later);
-        display_update_delay_time++;
-    }
-    
-    // Load ROM in memory
-    int indx = activeIdx % numFiles;
-    std::string path = rom_path + file_map[indx];
-    TChip8::loadRom(path, memory + PRGRM_START_ADDR);
-
-}
-
 void TChip8::run(){
+    logger->log("Starting CHIP8 porgram", ELogLevel::INFO);
     using clock = std::chrono::high_resolution_clock;
     clock::time_point start, end;
-    const std::chrono::microseconds desired_cycle_time(1000);
+    const std::chrono::microseconds desired_cycle_time(DESIRED_CYCLE_TIME);
     int display_update_delay_time = 0;
+    int timer_update_delay_time = 0;
     emu_running = true;
     while(emu_running){
         start = clock::now();
-
+        
         // Execute a CPU cycle
     	cpu->cycle();
         
-        if(display_update_delay_time >= 20){
+        if(display_update_delay_time >= DISPLAY_DELAY_COUNT){
             display->update_screen(screen);
             display_update_delay_time = 0;
-            
-            // Update timers ~60Hz
+        }
+        // Update timers ~60Hz
+        if(timer_update_delay_time >= TIMER_DELAY_COUNT){
         	if(delay_timer > 0)
                 delay_timer--;
 
@@ -156,17 +118,15 @@ void TChip8::run(){
                 sound->pauseSound();
             }
         }
-
         keyboard->update(keys, &emu_running);
-        
         end = clock::now();
         std::chrono::duration<double, std::micro> loop_time = end - start;
         auto sleep_time = desired_cycle_time - loop_time;
         auto later = end + sleep_time;
         std::this_thread::sleep_until(later);
         display_update_delay_time++;
+        timer_update_delay_time++;
     }
-
 }
 
 void TChip8::setDisplay(TDisplayInterface* displayInterface){

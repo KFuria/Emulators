@@ -63,10 +63,3 @@ directory:
 .PHONY: clean
 clean:
 	rm -f $(OBJS) $(MAIN)
-
-#=====================================================================
-# Debug section
-print:
-	$(info    OBJS is $(OBJS))
-	$(info    CPPOBJS is $(CPPOBJS))
-	$(info    CC is $(CC))

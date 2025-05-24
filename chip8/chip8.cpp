@@ -1,6 +1,5 @@
 #include "chip8.h"
 #include "cpu.h"
-#include "loader.h"
 
 TChip8::TChip8(){
     logger = TLogger::getInstance();

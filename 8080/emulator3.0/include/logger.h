@@ -25,6 +25,7 @@ public:
     void setLogLevel(ELogLevel logLevel);
     ELogLevel getLogLevel();
     static std::shared_ptr<TLogger> getInstance();
+    int getReferenceCount();
 };
 
 #endif

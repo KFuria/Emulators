@@ -8,7 +8,6 @@
 
 #define MAX_MEMORY 0x10000
 
-
 class T8080Hal{
 
 public: 

@@ -1,7 +1,7 @@
 #include "hal.h"
 
-THal::THal() : 
-    m_data{} {
+THal::THal(){
+    m_data.fill(0x00);
     logger = TLogger::getInstance();
     logger->log("HAL Initialized", ELogLevel::INFO);
 }
@@ -23,7 +23,7 @@ void THal::loadFile(std::string file_path){
     std::streamsize size = file.tellg();
     file.seekg(0, std::ios::beg);
 
-    if(file.read(reinterpret_cast<char *> (m_data), size)){
+    if(file.read(reinterpret_cast<char *> (&m_data), size)){
         logger->log("File read successfully. Size: " + std::to_string(size) + " bytes.", ELogLevel::INFO);
     }
     else{
@@ -32,7 +32,6 @@ void THal::loadFile(std::string file_path){
     }
     file.close();
 }
-
 
 uint8_t THal::read_byte(uint16_t addr){
     return m_data[addr];
@@ -43,9 +42,21 @@ void THal::write_byte(uint16_t addr, uint8_t byte){
 }
 
 uint8_t THal::io_input(uint8_t port){
-
+    in_port_reads[port]++;
+    if (!in_port_data[port].empty()) {
+        uint8_t data = in_port_data[port].front();
+        in_port_data[port].erase(in_port_data[port].begin());
+        return data;
+    }
+    return 0xFF;
 }
 
 void THal::io_output(uint8_t port, uint8_t value){
-
+    out_ports[port].push_back(value);
 }
+
+// Helper for tests to pre-load IN port data
+void THal::set_in_port_data(uint8_t port, const std::vector<uint8_t>& data) {
+    in_port_data[port] = data;
+}
+

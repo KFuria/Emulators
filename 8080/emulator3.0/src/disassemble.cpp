@@ -1,18 +1,4 @@
 #include "i8080.h"
-#include <format>
-
-T8080::T8080(){
-    logger = TLogger::getInstance();
-	logger->log("8080 Initialized", ELogLevel::INFO);
-}
-
-T8080::~T8080(){
-	logger->log("8080 Deinitialized", ELogLevel::INFO);
-}
-
-void T8080::setHal(T8080Hal * Hal){
-	hal = Hal;
-}
 
 int T8080::disassembleOp(int pc){
     uint8_t opcode[3] = {hal->read_byte(pc),hal->read_byte(pc+1), hal->read_byte(pc+2)};

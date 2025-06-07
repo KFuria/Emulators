@@ -45,3 +45,7 @@ std::shared_ptr<TLogger> TLogger::getInstance()
 ELogLevel TLogger::getLogLevel(){
     return logLevel;
 }
+
+int TLogger::getReferenceCount(){
+    return loggerInstance.use_count();
+}

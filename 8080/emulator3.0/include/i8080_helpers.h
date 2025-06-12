@@ -19,6 +19,11 @@ inline void T8080::write_byte(uint16_t addr, uint8_t val){
 }
 
 // Peeks the word at specified address in memory 
+inline uint8_t T8080::peek_byte(uint16_t addr){
+	return hal->read_byte(addr);
+}
+
+// Peeks the word at specified address in memory 
 inline uint16_t T8080::peek_word(uint16_t addr){
 	return (static_cast<uint16_t>(hal->read_byte(addr+1)) << 8) | hal->read_byte(addr);
 }
@@ -90,4 +95,22 @@ inline void T8080::setPC(uint16_t addr){
 
 inline void T8080::setSP(uint16_t addr){
     SP = addr;
+}
+
+//sets zero, sign and parity flags based on val
+inline void T8080::set_szp(uint8_t const val){
+    // Sign Flag (S): Set if bit 7 of the result is 1
+    set_flag(FLAG_SIGN, (val & FLAG_SIGN) != 0);
+    
+    // Zero Flag (Z): Set if the result is 0
+    set_flag(FLAG_ZERO, val == 0);
+
+    // Parity Flag (P): Set if the number of set bits in the result is even
+    uint8_t set_bits = 0;
+    for (int i = 0; i < 8; ++i) {
+        if ((val >> i) & 0x01) {
+            set_bits++;
+        }
+    }
+    set_flag(FLAG_PARITY, (set_bits % 2) == 0); 
 }

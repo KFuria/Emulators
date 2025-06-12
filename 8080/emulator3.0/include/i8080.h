@@ -18,6 +18,8 @@
 #define FLAG_ZERO       0x40 // Z
 #define FLAG_SIGN       0x80 // S  
 
+#define TEST_BUILD 1
+
 class T8080{
 public:
     T8080();
@@ -99,6 +101,7 @@ private:
     uint16_t read_word();
     uint8_t read_byte();
     uint16_t peek_word(uint16_t addr);
+    uint8_t peek_byte(uint16_t addr);
 
     // Getters for 16-bit register pairs
     uint16_t get_bc() const;
@@ -112,10 +115,10 @@ private:
     void set_hl(uint16_t val);
     void set_psw(uint16_t val); // Sets A and F registers
 
-    // Helper for flag manipulation (e.g., setting/clearing individual flags)
+    // Helper for flag manipulation
     void set_flag(uint8_t flag_mask, bool state);
     bool get_flag(uint8_t flag_mask) const;
-    
+    void set_szp(uint8_t val);
 
     // Opcode Instructions
     uint8_t nop(uint8_t);

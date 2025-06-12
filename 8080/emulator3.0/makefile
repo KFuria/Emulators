@@ -149,7 +149,7 @@ directory:
 
 clean:
 	@echo "Cleaning project..."
-	$(RM) $(OBJS) $(MAIN)
+	$(RM) $(OBJS) $(TEST_OBJS) $(MAIN) $(TEST_EXE)
 	@echo "Clean complete."
 
 # End of Makefile

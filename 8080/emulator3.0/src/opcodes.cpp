@@ -4,7 +4,8 @@
 
 //------------------------------------------------------------
 //	Desc: No operation occurs, execution proceeds with next
-//   sequential instruction. No condition bits affected. 
+//  sequential instruction.
+//	Condition bits affected: None
 //------------------------------------------------------------
 uint8_t T8080::nop(uint8_t op){
 	return 4; // cycle
@@ -12,7 +13,8 @@ uint8_t T8080::nop(uint8_t op){
 
 //------------------------------------------------------------
 //	Desc: Loads 16-bit immediate value into a specified 
-// 	register pair. No condition bits are affected 
+// 	register pair.
+// 	Condition bits affected: None
 //------------------------------------------------------------
 uint8_t T8080::lxi(uint8_t op){
 	switch((op >> 4) & 0x3){
@@ -36,6 +38,7 @@ uint8_t T8080::lxi(uint8_t op){
 //	Desc: The contents of the accumulator are stored in the 
 // 	memory location addressed by registers B and C, or by 
 //	registers D and E. 
+//	Condition bits affected: None
 //------------------------------------------------------------
 uint8_t T8080::stax(uint8_t op){
 	switch((op >> 4) & 0x1){
@@ -49,12 +52,91 @@ uint8_t T8080::stax(uint8_t op){
 	return 7;
 }
 
+
+//------------------------------------------------------------
+//	Desc: The 16 bit value held in the specified register pair
+//	is incremented by 1. 
+//	Condition bits affected: None
+//------------------------------------------------------------
 uint8_t T8080::inx(uint8_t op){
-	logger->log("0x03	INX", ELogLevel::OP);
+	switch((op >> 4) & 0x3){
+		case 0x00:
+			set_bc(get_bc()+1);
+			break;
+		case 0x01:
+			set_de(get_de()+1);
+			break;
+		case 0x02:
+			set_hl(get_hl()+1);
+			break;
+		case 0x03:
+			SP += 1;
+			break;
+	}
+	return 5;
 }
 
+
+//------------------------------------------------------------
+//	Desc: The specified register or memory byte is
+//	incremented by 1. 
+//	Condition bits affected: Zero, Sign, Parity, Auxiliary
+//	Carry
+//------------------------------------------------------------
 uint8_t T8080::inr(uint8_t op){
-	logger->log("0x04	INR", ELogLevel::OP);
+	uint8_t cycles;
+	switch((op >> 3) & 0x7){
+		case 0b000: 
+			B += 1;
+			set_flag(FLAG_AUX_CARRY, (B & 0xF) == 0);
+			set_szp(B);
+			cycles = 5;
+			break;
+		case 0b001: 
+			C += 1; 
+			set_flag(FLAG_AUX_CARRY, (C & 0xF) == 0);
+			set_szp(C);
+			cycles = 5;
+			break;
+		case 0b010: 
+			D += 1; 
+			set_flag(FLAG_AUX_CARRY, (D & 0xF) == 0);
+			set_szp(D);
+			cycles = 5;
+			break;
+		case 0b011: 
+			E += 1; 
+			set_flag(FLAG_AUX_CARRY, (E & 0xF) == 0);
+			set_szp(E);
+			cycles = 5;
+			break;
+		case 0b100: 
+			H += 1; 
+			set_flag(FLAG_AUX_CARRY, (H & 0xF) == 0);
+			set_szp(H);
+			cycles = 5;
+			break;
+		case 0b101: 
+			L += 1; 
+			set_flag(FLAG_AUX_CARRY, (L & 0xF) == 0);
+			set_szp(L);
+			cycles = 5;
+			break;
+		case 0b111: 
+			A += 1; 
+			set_flag(FLAG_AUX_CARRY, (A & 0xF) == 0);
+			set_szp(A);
+			cycles = 5;
+			break;
+		case 0b110:
+			uint8_t res = peek_byte(get_hl()) + 1;
+			write_byte(get_hl(), res);
+			set_flag(FLAG_AUX_CARRY, (res & 0xF) == 0);
+			set_szp(res);
+			cycles = 10;
+			break;
+	}
+	return cycles;
 }
 
 uint8_t T8080::dcr(uint8_t op){

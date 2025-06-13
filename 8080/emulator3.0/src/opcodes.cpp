@@ -8,6 +8,7 @@
 //	Condition bits affected: None
 //------------------------------------------------------------
 uint8_t T8080::nop(uint8_t op){
+	(void) op;
 	return 4; // cycle
 }
 
@@ -139,44 +140,258 @@ uint8_t T8080::inr(uint8_t op){
 	return cycles;
 }
 
+//------------------------------------------------------------
+//	Desc: The specified register or memory byte is
+//	decremented by 1. 
+//	Condition bits affected: Zero, Sign, Parity, Auxiliary
+//	Carry
+//------------------------------------------------------------
 uint8_t T8080::dcr(uint8_t op){
-	logger->log("0x05	DCR", ELogLevel::OP);
+	uint8_t cycles;
+	switch((op >> 3) & 0x7){
+		case 0b000: 
+			B -= 1;
+			set_flag(FLAG_AUX_CARRY, (B & 0xF) == 0xF);
+			set_szp(B);
+			cycles = 5;
+			break;
+		case 0b001: 
+			C -= 1; 
+			set_flag(FLAG_AUX_CARRY, (C & 0xF) == 0xF);
+			set_szp(C);
+			cycles = 5;
+			break;
+		case 0b010: 
+			D -= 1; 
+			set_flag(FLAG_AUX_CARRY, (D & 0xF) == 0xF);
+			set_szp(D);
+			cycles = 5;
+			break;
+		case 0b011: 
+			E -= 1; 
+			set_flag(FLAG_AUX_CARRY, (E & 0xF) == 0xF);
+			set_szp(E);
+			cycles = 5;
+			break;
+		case 0b100: 
+			H -= 1; 
+			set_flag(FLAG_AUX_CARRY, (H & 0xF) == 0xF);
+			set_szp(H);
+			cycles = 5;
+			break;
+		case 0b101: 
+			L -= 1; 
+			set_flag(FLAG_AUX_CARRY, (L & 0xF) == 0xF);
+			set_szp(L);
+			cycles = 5;
+			break;
+		case 0b111: 
+			A -= 1; 
+			set_flag(FLAG_AUX_CARRY, (A & 0xF) == 0xF);
+			set_szp(A);
+			cycles = 5;
+			break;
+		case 0b110:
+			uint8_t res = peek_byte(get_hl()) - 1;
+			write_byte(get_hl(), res);
+			set_flag(FLAG_AUX_CARRY, (res & 0xF) == 0xF);
+			set_szp(res);
+			cycles = 10;
+			break;
+	}
+	return cycles;
 }
 
+//------------------------------------------------------------
+//	Desc: The byte of immediate data is stored in
+//	the specified register or memory byte. 
+//	Condition bits affected: None
+//------------------------------------------------------------
 uint8_t T8080::mvi(uint8_t op){
-	logger->log("0x06	MVI", ELogLevel::OP);
+	uint8_t cycles; 
+	switch((op >> 3) & 0x7){
+		case 0b000: 
+			B = read_byte();
+			cycles = 7;
+			break;
+		case 0b001: 
+			C = read_byte(); 
+			cycles = 7;
+			break;
+		case 0b010: 
+			D = read_byte(); 
+			cycles = 7;
+			break;
+		case 0b011: 
+			E = read_byte(); 
+			cycles = 7;
+			break;
+		case 0b100: 
+			H = read_byte(); 
+			cycles = 7;
+			break;
+		case 0b101: 
+			L = read_byte(); 
+			cycles = 7;
+			break;
+		case 0b111: 
+			A = read_byte(); 
+			cycles = 7;
+			break;
+		case 0b110:
+			write_byte(get_hl(), read_byte());
+			cycles = 10;
+			break;
+	}
+	return cycles;
 }
 
+//------------------------------------------------------------
+//	Desc: The 16-bit number in the specified register pair is 
+//	added to the 16-bit number held in the H and L registers 
+//	using two's complement arithmetic. The result replaces the
+//	contents of the H and L registers. 
+//	Condition bits affected: Carry
+//------------------------------------------------------------
 uint8_t T8080::dad(uint8_t op){
-	logger->log("0x09	DAD", ELogLevel::OP);
+	uint8_t cycles;
+	uint32_t res; 
+	switch((op >> 4) & 0x3){
+		case 0b00:
+			res = get_hl() + get_bc();
+			set_hl(res);
+			set_flag(FLAG_CARRY, res >> 16);
+			cycles = 10;
+			break;
+		case 0b01: 
+			res = get_hl() + get_de();
+			set_hl(res);
+			set_flag(FLAG_CARRY, res >> 16);
+			cycles = 10;
+			break;
+		case 0b10: 
+			res = get_hl() << 1;
+			set_hl(res);
+			set_flag(FLAG_CARRY, res >> 16);
+			cycles = 10;
+			break;
+		case 0b11: 
+			res = get_hl() + getSP();
+			set_hl(res);
+			set_flag(FLAG_CARRY, res >> 16);
+			cycles = 10;
+			break;
+	}
+	return cycles;
 }
 
+//------------------------------------------------------------
+//	Desc: The contents of the memory location addressed by 
+//	registers B and C, or by registers D and E, replace
+//	the contents of the accumulator. 
+//	Condition bits affected: None
+//------------------------------------------------------------
 uint8_t T8080::ldax(uint8_t op){
-	logger->log("0x0A	LDAX", ELogLevel::OP);
+	switch((op >> 4) & 0x1){
+		case 0x0:
+			A = peek_byte(get_bc());
+			break;
+		case 0x1:
+			A = peek_byte(get_de());
+			break;
+	}
+	return 7;
 }
 
+//------------------------------------------------------------
+//	Desc: The 16-bit number held in the specified register 
+//	pair is decremented by one. 
+//	Condition bits affected: None
+//------------------------------------------------------------
 uint8_t T8080::dcx(uint8_t op){
-	logger->log("0x0B	DCX", ELogLevel::OP);
+	switch((op >> 4) & 0x3){
+		case 0x00:
+			set_bc(get_bc()-1);
+			break;
+		case 0x01:
+			set_de(get_de()-1);
+			break;
+		case 0x02:
+			set_hl(get_hl()-1);
+			break;
+		case 0x03:
+			SP -= 1;
+			break;
+	}
+	return 5;
 }
 
+//------------------------------------------------------------
+//	Desc: The Carry bit is set equal to the high-order bit of 
+//	the accumulator. The contents of the accumulator are 
+//	rotated one bit position to the left, with the high-order
+//	bit being transferred to the low-order bit position of
+//	the accumulator. 
+//	Condition bits affected: Carry
+//------------------------------------------------------------
 uint8_t T8080::rlc(uint8_t op){
-	logger->log("0x07	RLC", ELogLevel::OP);
+	A = (A << 1) | (A >> 7);
+	set_flag(FLAG_CARRY, A & 0x1);
+	return 4;
 }
 
+//------------------------------------------------------------
+//	Desc: The carry bit is set equal to the low-order bit of 
+//	the accumulator. The contents of the accumulator are
+//	rotated one bit position to the right, with the low-order 
+//	bit	being transferred to the high-order bit position of 
+//	the	accumulator. 
+//	Condition bits affected: Carry
+//------------------------------------------------------------
 uint8_t T8080::rrc(uint8_t op){
-	logger->log("0x0F	RRC", ELogLevel::OP);
+	A = (A >> 1) | (A << 7);
+	set_flag(FLAG_CARRY, A & 0x80);
+	return 4;
 }
 
+//------------------------------------------------------------
+//	Desc: The contents of the accumulator are rotated one bit
+//	position to the left. The high-order bit of the 
+//	accumulator replaces the Carry bit, while the Carry bit 
+//	replaces the low-order bit of the accumulator. 
+//	Condition bits affected: Carry
+//------------------------------------------------------------
 uint8_t T8080::ral(uint8_t op){
-	logger->log("0x01	RAL", ELogLevel::OP);
+	bool cf = get_flag(FLAG_CARRY);
+	set_flag(FLAG_CARRY, A & 0x80);
+	A = (A << 1) | cf;
+	return 4;
 }
 
+//------------------------------------------------------------
+//	Desc: The contents of the accumulator are rotated one bit
+//	position to the right. The low-order bit of the 
+//	accumulator replaces the Carry bit, while the Carry bit 
+//	replaces the high-order bit of the accumulator. 
+//	Condition bits affected: Carry
+//------------------------------------------------------------
 uint8_t T8080::rar(uint8_t op){
-	logger->log("0x01	RAR", ELogLevel::OP);
+	bool cf = get_flag(FLAG_CARRY);
+	set_flag(FLAG_CARRY, A & 0x01);
+	A = (A >> 1) | (cf << 7);
+	return 4;
 }
 
+//------------------------------------------------------------
+//	Desc: The contents of the L register are stored at the 
+//	memory address formed by concatenating HI ADDR with 
+//	LOW ADDR. The contents of the H register are stored at
+//	the next higher memory address.
+//	Condition bits affected: None
+//------------------------------------------------------------
 uint8_t T8080::shld(uint8_t op){
-	logger->log("0x01	SHLD", ELogLevel::OP);
+	write_word(read_word(), get_hl());
+	return 16;
 }
 
 uint8_t T8080::daa(uint8_t op){

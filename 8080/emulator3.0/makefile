@@ -53,6 +53,7 @@ TEST_SOURCES := $(TEST_DIR)/main_test.cpp \
 				$(TEST_DIR)/data_transfer_opcodes_test.cpp \
                 $(TEST_DIR)/arithmetic_opcodes_test.cpp \
                 $(TEST_DIR)/stack_opcodes_test.cpp \
+				$(TEST_DIR)/logical_opcodes_test.cpp \
 				$(TEST_DIR)/other_opcodes_test.cpp
 
 			
@@ -120,6 +121,18 @@ $(OUT_DIR)/%.o: $(SRC_DIR)/%.S
 $(OUT_DIR)/%.o: $(TEST_DIR)/%.cpp
 	$(CXX) $(TEST_DEBUG_FLAGS) -c $< -o $@
 
+
+# Target for building and running all tests
+TEST_EXE := $(OUT_DIR)/test_runner
+
+test: directory $(TEST_EXE)
+	@echo "Running all unit tests..."
+	@$(TEST_EXE)
+
+$(TEST_EXE): $(OBJS) $(TEST_OBJS)
+	$(CXX) $(LDFLAGS) -o $@ $(OBJS) $(TEST_OBJS) $(TEST_DEBUG_FLAGS) $(LIBS) $(TEST_LIBS)
+
+
 # Define FILTER as an empty string by default
 OPCODE ?= 
 
@@ -128,18 +141,19 @@ OPCODE ?=
 # Otherwise, use 'OpcodeTests.$(FILTER)*' to filter by the provided value.
 ifeq ($(OPCODE),)
     GTEST_FILTER_ARG = --gtest_filter=OpcodeTests.*
+	OPCODE = "all"
 else
     GTEST_FILTER_ARG = --gtest_filter=OpcodeTests.$(OPCODE)*
 endif
 
 # Target for building and running specific opcode tests, now using FILTER variable
-TEST_EXE := $(OUT_DIR)/opcode_test_runner
+OPCODE_TEST_EXE  := $(OUT_DIR)/opcode_test_runner
 
-test: directory $(TEST_EXE)
-	@echo "Running tests for ($(OPCODE))..."
-	@$(TEST_EXE) $(GTEST_FILTER_ARG)
+test_opcode: directory $(OPCODE_TEST_EXE)
+	@echo "Running OPCODE tests for $(OPCODE)..."
+	@$(OPCODE_TEST_EXE) $(GTEST_FILTER_ARG)
 
-$(TEST_EXE): $(OBJS) $(TEST_OBJS) # Link all test object files here for the general runner
+$(OPCODE_TEST_EXE): $(OBJS) $(TEST_OBJS) # Link all test object files here for the general runner
 	$(CXX) $(LDFLAGS) -o $@ $(OBJS) $(TEST_OBJS) $(TEST_DEBUG_FLAGS) $(LIBS) $(TEST_LIBS)
 
 
@@ -149,7 +163,7 @@ directory:
 
 clean:
 	@echo "Cleaning project..."
-	$(RM) $(OBJS) $(TEST_OBJS) $(MAIN) $(TEST_EXE)
+	$(RM) $(OBJS) $(TEST_OBJS) $(MAIN) $(TEST_EXE) $(OPCODE_TEST_EXE)
 	@echo "Clean complete."
 
 # End of Makefile

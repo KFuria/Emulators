@@ -40,43 +40,51 @@ inline uint16_t T8080::read_word(){
 	return result;
 }
 
-
+// private getter for BC register
 inline uint16_t T8080::get_bc() const {
     return (static_cast<uint16_t>(B) << 8) | C;
 }
 
+// private setter for BC register
 inline void T8080::set_bc(uint16_t val) {
     B = (val >> 8) & 0xFF;
     C = val & 0xFF;
 }
 
+// private getter for DE register
 inline uint16_t T8080::get_de() const {
     return (static_cast<uint16_t>(D) << 8) | E;
 }
 
+// private setter for DE register
 inline void T8080::set_de(uint16_t val) {
     D = (val >> 8) & 0xFF;
     E = val & 0xFF;
 }
 
+// private getter for HL register
 inline uint16_t T8080::get_hl() const {
     return (static_cast<uint16_t>(H) << 8) | L;
 }
 
+// private setter for HL register
 inline void T8080::set_hl(uint16_t val) {
     H = (val >> 8) & 0xFF;
     L = val & 0xFF;
 }
 
+// private getter for PSW register
 inline uint16_t T8080::get_psw() const {
     return (static_cast<uint16_t>(A) << 8) | F;
 }
 
+// private setter for PSW register
 inline void T8080::set_psw(uint16_t val) {
     A = (val >> 8) & 0xFF;
     F = val & 0xFF;
 }
 
+// private setter for flag resgister
 inline void T8080::set_flag(uint8_t flag_mask, bool state) {
     if (state) {
         F |= flag_mask;
@@ -85,14 +93,17 @@ inline void T8080::set_flag(uint8_t flag_mask, bool state) {
     }
 }
 
+// private getter for flag register
 inline bool T8080::get_flag(uint8_t flag_mask) const {
     return (F & flag_mask) != 0;
 }
 
+// Public setter for PC
 inline void T8080::setPC(uint16_t addr){
     PC = addr;
 }
 
+// Public setter for SP
 inline void T8080::setSP(uint16_t addr){
     SP = addr;
 }

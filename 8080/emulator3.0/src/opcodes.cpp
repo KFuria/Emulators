@@ -394,60 +394,344 @@ uint8_t T8080::shld(uint8_t op){
 	return 16;
 }
 
+//------------------------------------------------------------
+//	Desc: The eight-bit hexadecimal number in the accumulator
+//	is adjusted to form two four-bit binary coded decimal
+//	digits.
+//	Condition bits affected: Zero, Sign, Parity, Carry,
+//	Auxiliary Carry
+//------------------------------------------------------------
 uint8_t T8080::daa(uint8_t op){
-	logger->log("0x01	DAA", ELogLevel::OP);
+	if(((A & 0x0F) > 9) || get_flag(FLAG_AUX_CARRY)){
+		A += 0x06;
+		set_flag(FLAG_AUX_CARRY, 1);
+	}
+	if(((A >> 4) > 9) || get_flag(FLAG_CARRY)){
+		A += 0x60;
+		set_flag(FLAG_CARRY, 1);
+	}
+	set_szp(A);
+	return 4;
 }
 
+//------------------------------------------------------------
+//	Desc: The byte at the memory address formed by 
+//	concatenating HI ADD with LOW ADD replaces the contents
+//	of the L register. The byte at the next higher memory
+//	address replaces the contents of the H register.
+//	Condition bits affected: None
+//------------------------------------------------------------
 uint8_t T8080::lhld(uint8_t op){
-	logger->log("0x01	LHLD", ELogLevel::OP);
+	set_hl(peek_word(read_word()));
+	return 16;
 }
 
+//------------------------------------------------------------
+//	Desc: Each bit of the contents of the accumulator
+//	is complemented (producing the one's complement).
+//	Condition bits affected: None
+//------------------------------------------------------------
 uint8_t T8080::cma(uint8_t op){
-	logger->log("0x01	CMA", ELogLevel::OP);
+	A = ~A;
+	return 4;
 }
 
+//------------------------------------------------------------
+//	Desc: The contents of the accumulator replace the byte at 
+//	the memory address formed by HI ADD and LOW ADD.
+//	Condition bits affected: None
+//------------------------------------------------------------
 uint8_t T8080::sta(uint8_t op){
-	logger->log("0x01	STA", ELogLevel::OP);
+	write_byte(read_word(), A);
+	return 13;
 }
 
+//------------------------------------------------------------
+//	Desc: The Carry bit is set to one.
+//	Condition bits affected: Carry
+//------------------------------------------------------------
 uint8_t T8080::stc(uint8_t op){
-	logger->log("0x01	STC", ELogLevel::OP);
+	set_flag(FLAG_CARRY, 1);
+	return 4;
 }
 
+//------------------------------------------------------------
+//	Desc: The byte at the memory address formed by HI ADD and 
+//	LOW ADD replaces the contents of the accumulator.
+//	Condition bits affected: None
+//------------------------------------------------------------
 uint8_t T8080::lda(uint8_t op){
-	logger->log("0x01	LDA", ELogLevel::OP);
+	A = peek_byte(read_word());
+	return 13;
 }
 
+//------------------------------------------------------------
+//	Desc: If the Carry bit = 0, it is set to 1. 
+//	If the Carry bit = 1, it is reset to O.
+//	Condition bits affected: Carry
+//------------------------------------------------------------
 uint8_t T8080::cmc(uint8_t op){
-	logger->log("0x01	CMC", ELogLevel::OP);
+	set_flag(FLAG_CARRY, !get_flag(FLAG_CARRY));
+	return 4;
 }
 
+//------------------------------------------------------------
+//	Desc: One byte of data is moved from the register 
+//	specified by src (the source register) to the register
+//	specified by dst (the destination register). The data 
+//	replaces the contents of the destination register; 
+//	the source remains unchanged.
+//	Condition bits affected: None
+//------------------------------------------------------------
 uint8_t T8080::mov(uint8_t op){
-	logger->log("0x01	MOV", ELogLevel::OP);
+	uint8_t dst = (op >> 3) & 0x7; 	//  Destination register
+	uint8_t src = op & 0x7;         //  Source register
+	uint8_t cycles = 5;
+
+	if(dst == 0b000){ // B
+		switch(src){
+			case 0b000: break; 		  // MOV B, B
+			case 0b001: B = C; break; // MOV B, C
+			case 0b010: B = D; break; // MOV B, D
+			case 0b011: B = E; break; // MOV B, E
+			case 0b100: B = H; break; // MOV B, H
+			case 0b101: B = L; break; // MOV B, L
+			case 0b111: B = A; break; // MOV B, A
+			case 0b110: B = peek_byte(get_hl()); cycles = 7; break; // MOV B, M
+		}
+	} else if(dst == 0b001){ // C
+		switch(src){
+			case 0b000: C = B; break; // MOV C, B
+			case 0b001: break; 		  // MOV C, C
+			case 0b010: C = D; break; // MOV C, D
+			case 0b011: C = E; break; // MOV C, E
+			case 0b100: C = H; break; // MOV C, H
+			case 0b101: C = L; break; // MOV C, L
+			case 0b111: C = A; break; // MOV C, A
+			case 0b110: C = peek_byte(get_hl()); cycles = 7; break; // MOV C, M
+		}
+	} else if(dst == 0b010){ // D
+		switch(src){
+			case 0b000: D = B; break; // MOV D, B
+			case 0b001: D = C; break; // MOV D, C
+			case 0b010: break; 		  // MOV D, D
+			case 0b011: D = E; break; // MOV D, E
+			case 0b100: D = H; break; // MOV D, H
+			case 0b101: D = L; break; // MOV D, L
+			case 0b111: D = A; break; // MOV D, A
+			case 0b110: D = peek_byte(get_hl()); cycles = 7; break;// MOV D, M
+		}
+	} else if(dst == 0b011){ // E
+		switch(src){
+			case 0b000: E = B; break; // MOV E, B
+			case 0b001: E = C; break; // MOV E, C
+			case 0b010: E = D; break; // MOV E, D
+			case 0b011: break; 		  // MOV E, E
+			case 0b100: E = H; break; // MOV E, H
+			case 0b101: E = L; break; // MOV E, L
+			case 0b111: E = A; break; // MOV E, A
+			case 0b110: E = peek_byte(get_hl()); cycles = 7; break; // MOV E, M
+		}
+	} else if(dst == 0b100){ // H
+		switch(src){
+			case 0b000: H = B; break; // MOV H, B
+			case 0b001: H = C; break; // MOV H, C
+			case 0b010: H = D; break; // MOV H, D
+			case 0b011: H = E; break; // MOV H, E
+			case 0b100: break; 	 	  // MOV H, H
+			case 0b101: H = L; break; // MOV H, L
+			case 0b111: H = A; break; // MOV H, A
+			case 0b110: H = peek_byte(get_hl()); cycles = 7; break; // MOV H, M
+		}
+	} else if(dst == 0b101){ // L
+		switch(src){
+			case 0b000: L = B; break; // MOV L, B
+			case 0b001: L = C; break; // MOV L, C
+			case 0b010: L = D; break; // MOV L, D
+			case 0b011: L = E; break; // MOV L, E
+			case 0b100: L = H; break; // MOV L, H
+			case 0b101: break; 		  // MOV L, L
+			case 0b111: L = A; break; // MOV L, A
+			case 0b110: L = peek_byte(get_hl()); cycles = 7; break; // MOV L, M
+		}
+	} else if(dst == 0b111){ // A
+		switch(src){
+			case 0b000: A = B; break; // MOV A, B
+			case 0b001: A = C; break; // MOV A, C
+			case 0b010: A = D; break; // MOV A, D
+			case 0b011: A = E; break; // MOV A, E
+			case 0b100: A = H; break; // MOV A, H
+			case 0b101: A = L; break; // MOV A, L
+			case 0b111: break; 		  // MOV A, A
+			case 0b110: A = peek_byte(get_hl()); cycles = 7; break; // MOV A, M
+		}
+	} else if(dst == 0b110){ // M
+		cycles = 7;
+		switch(src){
+			case 0b000: write_byte(get_hl(), B); break; // MOV M, B
+			case 0b001: write_byte(get_hl(), C); break; // MOV M, C
+			case 0b010: write_byte(get_hl(), D); break; // MOV M, D
+			case 0b011: write_byte(get_hl(), E); break; // MOV M, E
+			case 0b100: write_byte(get_hl(), H); break; // MOV M, H
+			case 0b101: write_byte(get_hl(), L); break; // MOV M, L
+			case 0b111: write_byte(get_hl(), A); break; // MOV M, A
+			case 0b110: break; // MOV M, M
+		}
+	}
+
+	return cycles; // cycle count
 }
 
+//------------------------------------------------------------
+//	Desc: The program counter is incremented to the address of
+//	the next sequential instruction. The CPU then enters the 
+//	STOPPED state and no further activity takes place until an
+//	interrupt occurs.
+//	Condition bits affected: None
+//------------------------------------------------------------
 uint8_t T8080::hlt(uint8_t op){
-	logger->log("0x01	HLT", ELogLevel::OP);
+	halted = true;
+	return 7;
 }
 
+//------------------------------------------------------------
+//	Desc: The specified byte is added to the contents of the 
+//	accumulator using two's complement arithmetic.
+//	Condition bits affected: Carry, Sign, Zero, Parity,
+//	Auxiliary Carry
+//------------------------------------------------------------
 uint8_t T8080::add(uint8_t op){
-	logger->log("0x01	ADD", ELogLevel::OP);
+	uint8_t cycles;
+	uint8_t value;
+	switch(op & 0x7){
+		case 0b000: value = B; cycles = 4; break;
+		case 0b001: value = C; cycles = 4; break;
+		case 0b010: value = D; cycles = 4; break;
+		case 0b011: value = E; cycles = 4; break;
+		case 0b100: value = H; cycles = 4; break;
+		case 0b101: value = L; cycles = 4; break;
+		case 0b110: value = peek_byte(get_hl()); cycles = 7; break;
+		case 0b111: value = A; cycles = 4; break;
+	}
+
+	A += value;
+	set_flag(FLAG_AUX_CARRY, (A & 0x0F) < (value & 0x0F));
+	set_flag(FLAG_CARRY, A < value);
+	set_szp(A);
+
+	return cycles;
 }
 
+//------------------------------------------------------------
+//	Desc: The specified byte is subtracted from the
+//	accumulator using two's complement arithmetic.
+//  If there is no carry out of the high-order bit position,
+//	indicating that a borrow occurred, the Carry bit is set;
+//	otherwise it is reset. (Note that this differs from an add
+//	operation, which resets the carry if no overflow occurs).
+//	Condition bits affected: Carry, Sign, Zero, Parity,
+//	Auxiliary Carry
+//------------------------------------------------------------
 uint8_t T8080::sub(uint8_t op){
-	logger->log("0x01	SUB", ELogLevel::OP);
+	uint8_t cycles;
+	uint8_t value;
+	switch(op & 0x7){
+		case 0b000: value = B; cycles = 4; break;
+		case 0b001: value = C; cycles = 4; break;
+		case 0b010: value = D; cycles = 4; break;
+		case 0b011: value = E; cycles = 4; break;
+		case 0b100: value = H; cycles = 4; break;
+		case 0b101: value = L; cycles = 4; break;
+		case 0b110: value = peek_byte(get_hl()); cycles = 7; break;
+		case 0b111: value = A; cycles = 4; break;
+	}
+	A -= value;
+	set_flag(FLAG_AUX_CARRY, (A & 0x0F) > (value & 0x0F));
+	set_flag(FLAG_CARRY, A > value);
+	set_szp(A);
+
+	return cycles;
 }
 
+//------------------------------------------------------------
+//	Desc: The specified byte is logically ANDed bit by bit 
+//	with the contents of the accumulator. The Carry bit is 
+//	reset to zero.
+//	Condition bits affected: Carry, Zero, Sign, Parity,
+//	Auxiliary Carry
+//------------------------------------------------------------
 uint8_t T8080::ana(uint8_t op){
-	logger->log("0x01	ANA", ELogLevel::OP);
+	uint8_t cycles;
+	uint8_t value;
+	switch(op & 0x7){
+		case 0b000: value = B; cycles = 4; break;
+		case 0b001: value = C; cycles = 4; break;
+		case 0b010: value = D; cycles = 4; break;
+		case 0b011: value = E; cycles = 4; break;
+		case 0b100: value = H; cycles = 4; break;
+		case 0b101: value = L; cycles = 4; break;
+		case 0b110: value = peek_byte(get_hl()); cycles = 7; break;
+		case 0b111: value = A; cycles = 4; break;
+	}
+	A &= value;
+	set_flag(FLAG_CARRY, 0);	// Carry always reset
+	set_flag(FLAG_AUX_CARRY, (A & 0x08) && (value & 0x08));
+	set_szp(A);
+	return cycles;
 }
 
+//------------------------------------------------------------
+//	Desc: The specified byte is EXCLUSIVE-ORed bit by bit with
+// 	the contents of the accumulator. The Carry bit is reset to
+//	zero.
+//	Condition bits affected: Carry, Zero, Sign, Parity,
+//	Auxiliary Carry
+//------------------------------------------------------------
 uint8_t T8080::xra(uint8_t op){
-	logger->log("0x01	XRA", ELogLevel::OP);
+	uint8_t cycles;
+	uint8_t value;
+	switch(op & 0x7){
+		case 0b000: value = B; cycles = 4; break;
+		case 0b001: value = C; cycles = 4; break;
+		case 0b010: value = D; cycles = 4; break;
+		case 0b011: value = E; cycles = 4; break;
+		case 0b100: value = H; cycles = 4; break;
+		case 0b101: value = L; cycles = 4; break;
+		case 0b110: value = peek_byte(get_hl()); cycles = 7; break;
+		case 0b111: value = A; cycles = 4; break;
+	}
+	A ^= value;
+	set_flag(FLAG_CARRY, 0);	// Carry always reset
+	set_flag(FLAG_AUX_CARRY, (A & 0x08) && (value & 0x08));
+	set_szp(A);
+	return cycles;
 }
 
+//------------------------------------------------------------
+//	Desc: The specified byte is logically ORed bit by bit with
+//	the contents of the accumulator. The carry bit is reset to 
+//	zero.
+//	Condition bits affected: Carry, Zero, Sign, Parity,
+//	Auxiliary Carry
+//------------------------------------------------------------
 uint8_t T8080::ora(uint8_t op){
-	logger->log("0x01	ORA", ELogLevel::OP);
+	uint8_t cycles;
+	uint8_t value;
+	switch(op & 0x7){
+		case 0b000: value = B; cycles = 4; break;
+		case 0b001: value = C; cycles = 4; break;
+		case 0b010: value = D; cycles = 4; break;
+		case 0b011: value = E; cycles = 4; break;
+		case 0b100: value = H; cycles = 4; break;
+		case 0b101: value = L; cycles = 4; break;
+		case 0b110: value = peek_byte(get_hl()); cycles = 7; break;
+		case 0b111: value = A; cycles = 4; break;
+	}
+	A |= value;
+	set_flag(FLAG_CARRY, 0);	// Carry always reset
+	set_flag(FLAG_AUX_CARRY, (A & 0x08) && (value & 0x08));
+	set_szp(A);
+	return cycles;
 }
 
 uint8_t T8080::cmp(uint8_t op){

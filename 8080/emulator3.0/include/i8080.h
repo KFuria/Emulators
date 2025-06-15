@@ -67,7 +67,7 @@ public:
     void setH(uint8_t val) { H = val; }
     void setL(uint8_t val) { L = val; }
     
-    // Setters for 16-bit register pairs and status word (primarily for test setup)
+    // Setters for 16-bit register pairs and status word (Only for test setup)
     void setBC(uint16_t val) { set_bc(val); }
     void setDE(uint16_t val) { set_de(val); }
     void setHL(uint16_t val) { set_hl(val); }

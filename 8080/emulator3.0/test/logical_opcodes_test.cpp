@@ -81,6 +81,8 @@ TEST_F(OpcodeTests, RRC_Carry1) {
 }
 
 TEST_F(OpcodeTests, RAL_Carry0Bit7Is0) {
+
+    // Test RAL (0x17)
     uint16_t initial_pc = cpu.getPC();
     cpu.setA(0b01010100); // A = 0x54 (Bit 7 is 0)
     cpu.setFlags(cpu.getFlags() & ~FLAG_CARRY);   // Carry is 0
@@ -94,6 +96,8 @@ TEST_F(OpcodeTests, RAL_Carry0Bit7Is0) {
 }
 
 TEST_F(OpcodeTests, RAL_Carry0Bit7Is1) {
+
+    // Test RAL (0x17)
     uint16_t initial_pc = cpu.getPC();
     cpu.setA(0b10101010); // A = 0xAA (Bit 7 is 1)
     cpu.setFlags(cpu.getFlags() & ~FLAG_CARRY);   // Carry is 0
@@ -107,6 +111,8 @@ TEST_F(OpcodeTests, RAL_Carry0Bit7Is1) {
 }
 
 TEST_F(OpcodeTests, RAL_Carry1Bit7Is0) {
+
+    // Test RAL (0x17)
     uint16_t initial_pc = cpu.getPC();
     cpu.setA(0b01010100); // A = 0x54 (Bit 7 is 0)
     cpu.setFlags(cpu.getFlags() | FLAG_CARRY); // Carry is 1
@@ -120,6 +126,8 @@ TEST_F(OpcodeTests, RAL_Carry1Bit7Is0) {
 }
 
 TEST_F(OpcodeTests, RAR_Carry0Bit0Is0) {
+
+    // Test RAR (0x1F)
     uint16_t initial_pc = cpu.getPC();
     cpu.setA(0b01010100); // A = 0x54 (Bit 0 is 0)
     cpu.setFlags(cpu.getFlags() & ~FLAG_CARRY);   // Carry is 0
@@ -133,6 +141,8 @@ TEST_F(OpcodeTests, RAR_Carry0Bit0Is0) {
 }
 
 TEST_F(OpcodeTests, RAR_Carry0Bit0Is1) {
+
+    // Test RAR (0x1F)
     uint16_t initial_pc = cpu.getPC();
     cpu.setA(0b01010101); // A = 0xAA (Bit 0 is 1)
     cpu.setFlags(cpu.getFlags() & ~FLAG_CARRY);   // Carry is 0
@@ -146,6 +156,8 @@ TEST_F(OpcodeTests, RAR_Carry0Bit0Is1) {
 }
 
 TEST_F(OpcodeTests, RAR_Carry1Bit0Is0) {
+
+    // Test RAR (0x1F)
     uint16_t initial_pc = cpu.getPC();
     cpu.setA(0b01010100); // A = 0x54 (Bit 7 is 0)
     cpu.setFlags(cpu.getFlags() | FLAG_CARRY); // Carry is 1
@@ -157,3 +169,65 @@ TEST_F(OpcodeTests, RAR_Carry1Bit0Is0) {
     EXPECT_FALSE(cpu.getFlags() & FLAG_CARRY); // Old A0 (0) goes to Carry
     EXPECT_EQ(cpu.getCyc(), 4);
 }
+
+TEST_F(OpcodeTests, CMA) {
+
+    // Test CMA (0x2F)
+    uint16_t initial_pc = cpu.getPC();
+    cpu.setA(0b10101010); // A = 0xAA
+
+    loadAndRun(initial_pc, {0x2F}); // CMA
+
+    EXPECT_EQ(cpu.getPC(), initial_pc + 1);
+    EXPECT_EQ(cpu.getA(), 0b01010101); // A should be 0x55 (bitwise NOT)
+    EXPECT_FALSE(cpu.getFlags() & FLAG_CARRY);
+    EXPECT_FALSE(cpu.getFlags() & FLAG_SIGN);
+    EXPECT_FALSE(cpu.getFlags() & FLAG_ZERO);
+    EXPECT_FALSE(cpu.getFlags() & FLAG_AUX_CARRY);
+    EXPECT_FALSE(cpu.getFlags() & FLAG_PARITY);
+    EXPECT_EQ(cpu.getCyc(), 4);
+
+}
+
+TEST_F(OpcodeTests, STC) {
+
+    // Test STC (0x37)
+    uint16_t initial_pc = cpu.getPC();
+    cpu.setFlags(cpu.getFlags() & ~FLAG_CARRY); // Clear Carry
+
+    loadAndRun(initial_pc, {0x37}); // STC
+
+    EXPECT_EQ(cpu.getPC(), initial_pc + 1);
+    EXPECT_TRUE(cpu.getFlags() & FLAG_CARRY); // Carry should be set
+    EXPECT_EQ(cpu.getCyc(), 4);
+
+}
+
+TEST_F(OpcodeTests, CMC_setCarry) {
+
+    // Test CMC (0x3F)
+    uint16_t initial_pc = cpu.getPC();
+    cpu.setFlags(cpu.getFlags() & ~FLAG_CARRY); // Clear Carry
+
+    loadAndRun(initial_pc, {0x3F}); // CMC
+
+    EXPECT_EQ(cpu.getPC(), initial_pc + 1);
+    EXPECT_TRUE(cpu.getFlags() & FLAG_CARRY); // Carry should be set
+    EXPECT_EQ(cpu.getCyc(), 4);
+
+}
+
+TEST_F(OpcodeTests, CMC_clearCarry) {
+
+    // Test CMC (0x3F)
+    uint16_t initial_pc = cpu.getPC();
+    cpu.setFlags(cpu.getFlags() | FLAG_CARRY); // Set Carry
+
+    loadAndRun(initial_pc, {0x3F}); // CMC
+
+    EXPECT_EQ(cpu.getPC(), initial_pc + 1);
+    EXPECT_FALSE(cpu.getFlags() & FLAG_CARRY); // Carry should be cleared
+    EXPECT_EQ(cpu.getCyc(), 4);
+
+}
+

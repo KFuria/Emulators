@@ -911,3 +911,201 @@ TEST_F(OpcodeTests, ADD_A){
 
     EXPECT_EQ(cpu.getCyc(), 4);
 }
+
+TEST_F(OpcodeTests, SUB_B_NoFlags){
+
+    // Test SUB B (0x90)
+    uint16_t initial_pc = cpu.getPC();
+    cpu.setA(0x04);
+    cpu.setB(0x02);
+    cpu.setFlags(0x02); // Clear flags
+    loadAndRun(initial_pc, {0x90});
+    EXPECT_EQ(cpu.getPC(), initial_pc + 1);
+    EXPECT_EQ(cpu.getA(), 0x02);        // A = 0x04 - 0x02 = 0x02
+    EXPECT_EQ(cpu.getBC(), 0x0200);
+    EXPECT_EQ(cpu.getDE(), 0x0000);
+    EXPECT_EQ(cpu.getHL(), 0x0000);  
+    // Flags: Z=0, S=0, P=0, AC=0, C=0
+    EXPECT_FALSE(cpu.getFlags() & FLAG_SIGN);
+    EXPECT_FALSE(cpu.getFlags() & FLAG_ZERO);
+    EXPECT_FALSE(cpu.getFlags() & FLAG_PARITY);
+    EXPECT_FALSE(cpu.getFlags() & FLAG_AUX_CARRY);
+    EXPECT_FALSE(cpu.getFlags() & FLAG_CARRY); 
+    EXPECT_EQ(cpu.getCyc(), 4);
+
+}
+
+TEST_F(OpcodeTests, SUB_C_ZeroParityFlag){
+
+    // Test SUB C (0x91)
+    uint16_t initial_pc = cpu.getPC();
+    cpu.setA(0x01);
+    cpu.setC(0x01);
+    cpu.setFlags(0x02); // Clear flags
+    loadAndRun(initial_pc, {0x91});
+    EXPECT_EQ(cpu.getPC(), initial_pc + 1);
+    EXPECT_EQ(cpu.getA(), 0x00);        // A = 0x01 - 0x01 = 0x00
+    EXPECT_EQ(cpu.getBC(), 0x0001);
+    EXPECT_EQ(cpu.getDE(), 0x0000);
+    EXPECT_EQ(cpu.getHL(), 0x0000);
+    
+    // Flags: Z=1, S=0, P=1, AC=0, C=0
+    EXPECT_TRUE(cpu.getFlags() & FLAG_ZERO);
+    EXPECT_FALSE(cpu.getFlags() & FLAG_SIGN);
+    EXPECT_TRUE(cpu.getFlags() & FLAG_PARITY);
+    EXPECT_FALSE(cpu.getFlags() & FLAG_AUX_CARRY);
+    EXPECT_FALSE(cpu.getFlags() & FLAG_CARRY);
+
+    EXPECT_EQ(cpu.getCyc(), 4);
+}
+
+TEST_F(OpcodeTests, SUB_D_SignCarryFlag){
+
+    // Test SUB D (0x92)
+    uint16_t initial_pc = cpu.getPC();
+    cpu.setA(0x0C);
+    cpu.setD(0x0F);
+    cpu.setFlags(0x02); // Clear flags
+    loadAndRun(initial_pc, {0x92});
+    EXPECT_EQ(cpu.getPC(), initial_pc + 1);
+    EXPECT_EQ(cpu.getA(), 0xFD);        // A = 0x0C - 0x0F = 0xFD
+    EXPECT_EQ(cpu.getBC(), 0x0000);
+    EXPECT_EQ(cpu.getDE(), 0x0F00);
+    EXPECT_EQ(cpu.getHL(), 0x0000);
+    
+    // Flags: Z=0, S=1, P=0, AC=1, C=1
+    EXPECT_FALSE(cpu.getFlags() & FLAG_ZERO);
+    EXPECT_TRUE(cpu.getFlags() & FLAG_SIGN);
+    EXPECT_FALSE(cpu.getFlags() & FLAG_PARITY);
+    EXPECT_TRUE(cpu.getFlags() & FLAG_AUX_CARRY);
+    EXPECT_TRUE(cpu.getFlags() & FLAG_CARRY);
+
+    EXPECT_EQ(cpu.getCyc(), 4);
+
+}
+
+TEST_F(OpcodeTests, SUB_E_ParityFlag){
+
+    // Test SUB E (0x93)
+    uint16_t initial_pc = cpu.getPC();
+    cpu.setA(0x06);
+    cpu.setE(0x03);
+    cpu.setFlags(cpu.getFlags() | FLAG_AUX_CARRY | FLAG_CARRY | FLAG_ZERO | FLAG_SIGN); // Clear flags
+    loadAndRun(initial_pc, {0x93});
+    EXPECT_EQ(cpu.getPC(), initial_pc + 1);
+    EXPECT_EQ(cpu.getA(), 0x03);        // A = 0x06 - 0x03 = 0x03
+    EXPECT_EQ(cpu.getBC(), 0x0000);
+    EXPECT_EQ(cpu.getDE(), 0x0003);
+    EXPECT_EQ(cpu.getHL(), 0x0000);
+    
+    // Flags: Z=0, S=0, P=1, AC=0, C=0
+    EXPECT_FALSE(cpu.getFlags() & FLAG_ZERO);
+    EXPECT_FALSE(cpu.getFlags() & FLAG_SIGN);
+    EXPECT_TRUE(cpu.getFlags() & FLAG_PARITY);
+    EXPECT_FALSE(cpu.getFlags() & FLAG_AUX_CARRY);
+    EXPECT_FALSE(cpu.getFlags() & FLAG_CARRY);
+
+    EXPECT_EQ(cpu.getCyc(), 4);
+
+}
+
+TEST_F(OpcodeTests, SUB_H_AuxiliaryFlag){
+
+    // Test SUB H (0x94)
+    uint16_t initial_pc = cpu.getPC();
+    cpu.setA(0x10);
+    cpu.setH(0x02);
+    cpu.setFlags(0x02); // Clear flags
+    loadAndRun(initial_pc, {0x94});
+    EXPECT_EQ(cpu.getPC(), initial_pc + 1);
+    EXPECT_EQ(cpu.getA(), 0x0E);        // A = 0x10 - 0x02 = 0x0E
+    EXPECT_EQ(cpu.getBC(), 0x0000);
+    EXPECT_EQ(cpu.getDE(), 0x0000);
+    EXPECT_EQ(cpu.getHL(), 0x0200);
+    
+    // Flags: Z=0, S=0, P=0, AC=1, C=0
+    EXPECT_FALSE(cpu.getFlags() & FLAG_ZERO);
+    EXPECT_FALSE(cpu.getFlags() & FLAG_SIGN);
+    EXPECT_FALSE(cpu.getFlags() & FLAG_PARITY);
+    EXPECT_TRUE(cpu.getFlags() & FLAG_AUX_CARRY);
+    EXPECT_FALSE(cpu.getFlags() & FLAG_CARRY);
+
+    EXPECT_EQ(cpu.getCyc(), 4);
+
+}
+
+TEST_F(OpcodeTests, SUB_L_ClearFlags){
+
+    // Test SUB L (0x95)
+    uint16_t initial_pc = cpu.getPC();
+    cpu.setA(0x7D);
+    cpu.setL(0x01);
+    cpu.setFlags(cpu.getFlags() | FLAG_PARITY | FLAG_SIGN | FLAG_ZERO | FLAG_AUX_CARRY | FLAG_CARRY); // Set flags
+    loadAndRun(initial_pc, {0x95});
+    EXPECT_EQ(cpu.getPC(), initial_pc + 1);
+    EXPECT_EQ(cpu.getA(), 0x7C);        // A = 0x7D - 0x01 = 0x7C
+    EXPECT_EQ(cpu.getBC(), 0x0000);
+    EXPECT_EQ(cpu.getDE(), 0x0000);
+    EXPECT_EQ(cpu.getHL(), 0x0001);
+    
+    // Flags: Z=0, S=0, P=0, AC=0, C=0
+    EXPECT_FALSE(cpu.getFlags() & FLAG_ZERO);
+    EXPECT_FALSE(cpu.getFlags() & FLAG_SIGN);
+    EXPECT_FALSE(cpu.getFlags() & FLAG_PARITY);
+    EXPECT_FALSE(cpu.getFlags() & FLAG_AUX_CARRY);
+    EXPECT_FALSE(cpu.getFlags() & FLAG_CARRY);
+
+    EXPECT_EQ(cpu.getCyc(), 4);
+
+}
+
+TEST_F(OpcodeTests, SUB_M){
+
+    // Test SUB M (0x96)
+    uint16_t initial_pc = cpu.getPC();
+    cpu.setHL(0x2000);
+    hal.write_byte(0x2000, 0x6C);
+    cpu.setA(0x9A);
+    cpu.setFlags(0x02); // Clear flags
+
+    loadAndRun(initial_pc, {0x96});
+    EXPECT_EQ(cpu.getPC(), initial_pc + 1);
+    EXPECT_EQ(cpu.getA(), 0x2E);        // A = 0x9A - 0x6C = 0x2E
+    EXPECT_EQ(cpu.getBC(), 0x0000);
+    EXPECT_EQ(cpu.getDE(), 0x0000);
+    EXPECT_EQ(cpu.getHL(), 0x2000); // HL should not change
+    EXPECT_EQ(hal.read_byte(0x2000), 0x6C); // Memory value remains unchanged
+    
+    // Flags: Z=0, S=0, P=1, AC=1, C=0
+    EXPECT_FALSE(cpu.getFlags() & FLAG_ZERO);
+    EXPECT_FALSE(cpu.getFlags() & FLAG_SIGN);
+    EXPECT_TRUE(cpu.getFlags() & FLAG_PARITY);
+    EXPECT_TRUE(cpu.getFlags() & FLAG_AUX_CARRY);
+    EXPECT_FALSE(cpu.getFlags() & FLAG_CARRY);
+
+    EXPECT_EQ(cpu.getCyc(), 7);
+}
+
+TEST_F(OpcodeTests, SUB_A){
+
+    // Test SUB A (0x97)
+    uint16_t initial_pc = cpu.getPC();
+    cpu.setA(0x69);
+    cpu.setFlags(cpu.getFlags() | FLAG_PARITY | FLAG_SIGN | FLAG_AUX_CARRY | FLAG_CARRY); // Set flags
+    loadAndRun(initial_pc, {0x97});
+    EXPECT_EQ(cpu.getPC(), initial_pc + 1);
+    EXPECT_EQ(cpu.getA(), 0x00);        // A = 0x69 - 0x69 = 0x00
+    EXPECT_EQ(cpu.getBC(), 0x0000);
+    EXPECT_EQ(cpu.getDE(), 0x0000);
+    EXPECT_EQ(cpu.getHL(), 0x0000);
+    
+    // Flags: Z=1, S=0, P=0, AC=0, C=0
+    EXPECT_TRUE(cpu.getFlags() & FLAG_ZERO);
+    EXPECT_FALSE(cpu.getFlags() & FLAG_SIGN);
+    EXPECT_TRUE(cpu.getFlags() & FLAG_PARITY);
+    EXPECT_FALSE(cpu.getFlags() & FLAG_AUX_CARRY);
+    EXPECT_FALSE(cpu.getFlags() & FLAG_CARRY);
+
+    EXPECT_EQ(cpu.getCyc(), 4);
+}
+

@@ -645,9 +645,10 @@ uint8_t T8080::sub(uint8_t op){
 		case 0b110: value = peek_byte(get_hl()); cycles = 7; break;
 		case 0b111: value = A; cycles = 4; break;
 	}
-	A -= value;
-	set_flag(FLAG_AUX_CARRY, (A & 0x0F) > (value & 0x0F));
-	set_flag(FLAG_CARRY, A > value);
+	uint8_t old_A = A;
+	A = old_A - value;
+	set_flag(FLAG_AUX_CARRY, (old_A & 0x0F) < (value & 0x0F));
+	set_flag(FLAG_CARRY, old_A < value);
 	set_szp(A);
 
 	return cycles;
@@ -673,9 +674,11 @@ uint8_t T8080::ana(uint8_t op){
 		case 0b110: value = peek_byte(get_hl()); cycles = 7; break;
 		case 0b111: value = A; cycles = 4; break;
 	}
+	
+	set_flag(FLAG_AUX_CARRY, (A & 0x08) && (value & 0x08)); // Bit 3
+	
 	A &= value;
 	set_flag(FLAG_CARRY, 0);	// Carry always reset
-	set_flag(FLAG_AUX_CARRY, (A & 0x08) && (value & 0x08));
 	set_szp(A);
 	return cycles;
 }
@@ -702,7 +705,7 @@ uint8_t T8080::xra(uint8_t op){
 	}
 	A ^= value;
 	set_flag(FLAG_CARRY, 0);	// Carry always reset
-	set_flag(FLAG_AUX_CARRY, (A & 0x08) && (value & 0x08));
+	set_flag(FLAG_AUX_CARRY, 0);
 	set_szp(A);
 	return cycles;
 }
@@ -729,7 +732,7 @@ uint8_t T8080::ora(uint8_t op){
 	}
 	A |= value;
 	set_flag(FLAG_CARRY, 0);	// Carry always reset
-	set_flag(FLAG_AUX_CARRY, (A & 0x08) && (value & 0x08));
+	set_flag(FLAG_AUX_CARRY, 0);
 	set_szp(A);
 	return cycles;
 }

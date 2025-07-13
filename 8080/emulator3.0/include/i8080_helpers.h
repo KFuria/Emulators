@@ -1,3 +1,6 @@
+#ifndef __I8080_HELPER_H__
+#define __I8080_HELPER_H__
+
 #include "i8080.h"
 
 //-----------------------------------------------------------------------------
@@ -40,51 +43,51 @@ inline uint16_t T8080::read_word(){
 	return result;
 }
 
-// private getter for BC register
+// Private getter for BC register
 inline uint16_t T8080::get_bc() const {
     return (static_cast<uint16_t>(B) << 8) | C;
 }
 
-// private setter for BC register
+// Private setter for BC register
 inline void T8080::set_bc(uint16_t val) {
     B = (val >> 8) & 0xFF;
     C = val & 0xFF;
 }
 
-// private getter for DE register
+// Private getter for DE register
 inline uint16_t T8080::get_de() const {
     return (static_cast<uint16_t>(D) << 8) | E;
 }
 
-// private setter for DE register
+// Private setter for DE register
 inline void T8080::set_de(uint16_t val) {
     D = (val >> 8) & 0xFF;
     E = val & 0xFF;
 }
 
-// private getter for HL register
+// Private getter for HL register
 inline uint16_t T8080::get_hl() const {
     return (static_cast<uint16_t>(H) << 8) | L;
 }
 
-// private setter for HL register
+// Private setter for HL register
 inline void T8080::set_hl(uint16_t val) {
     H = (val >> 8) & 0xFF;
     L = val & 0xFF;
 }
 
-// private getter for PSW register
+// Private getter for PSW register
 inline uint16_t T8080::get_psw() const {
     return (static_cast<uint16_t>(A) << 8) | F;
 }
 
-// private setter for PSW register
+// Private setter for PSW register
 inline void T8080::set_psw(uint16_t val) {
     A = (val >> 8) & 0xFF;
-    F = val & 0xFF;
+    F = (val & 0xD7) | 0x02; // (S, Z, 0, AC, 0, P, 1, C)
 }
 
-// private setter for flag resgister
+// Private setter for flag resgister
 inline void T8080::set_flag(uint8_t flag_mask, bool state) {
     if (state) {
         F |= flag_mask;
@@ -93,7 +96,7 @@ inline void T8080::set_flag(uint8_t flag_mask, bool state) {
     }
 }
 
-// private getter for flag register
+// Private getter for flag register
 inline bool T8080::get_flag(uint8_t flag_mask) const {
     return (F & flag_mask) != 0;
 }
@@ -108,7 +111,7 @@ inline void T8080::setSP(uint16_t addr){
     SP = addr;
 }
 
-//sets zero, sign and parity flags based on val
+// Sets zero, sign and parity flags based on val
 inline void T8080::set_szp(uint8_t const val){
     // Sign Flag (S): Set if bit 7 of the result is 1
     set_flag(FLAG_SIGN, (val & FLAG_SIGN) != 0);
@@ -119,9 +122,22 @@ inline void T8080::set_szp(uint8_t const val){
     // Parity Flag (P): Set if the number of set bits in the result is even
     uint8_t set_bits = 0;
     for (int i = 0; i < 8; ++i) {
-        if ((val >> i) & 0x01) {
-            set_bits++;
-        }
+        set_bits += ((val >> i) & 0x01);
     }
-    set_flag(FLAG_PARITY, (set_bits % 2) == 0); 
+    set_flag(FLAG_PARITY, (set_bits & 0x1) == 0); 
 }
+
+// Pop 16-bit word from the stack
+inline uint16_t T8080::pop_word(){
+    uint16_t res = peek_word(SP);
+    SP += 2;
+    return res;
+}
+
+// Push 16-bit word to the stack
+inline void T8080::push_word(uint16_t val){
+    SP -= 2;
+    write_word(SP, val);
+}
+
+#endif

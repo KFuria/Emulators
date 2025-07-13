@@ -3,7 +3,7 @@ ifeq ($(OSTYPE),cygwin)
 	MKDIR=mkdir -p
 	TARGET_EXTENSION=out
 else ifeq ($(OS),Windows_NT)
-	CLEANUP=del /F /Q
+	CLEANUP=rm -f
 	MKDIR=mkdir
 	TARGET_EXTENSION=exe
 else
@@ -21,7 +21,7 @@ PATHO = build/objs/
 PATHD = build/depends/
 
 CC = gcc
-OPT = -O3
+OPT = -O0
 DEPFLAGS = -MT $@ -MD -MP -MF $(PATHD)$*.d # make .d files while compiling
 CFLAGS = -Wall -Wextra -g -std=c99 -pedantic -I. -I$(PATHI) $(OPT) $(DEPFLAGS)
 

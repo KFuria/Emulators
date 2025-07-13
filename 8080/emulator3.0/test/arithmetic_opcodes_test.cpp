@@ -1,4 +1,4 @@
-#include "test_fixture.h"
+#include "opcodes_test.h"
 
 TEST_F(OpcodeTests, INX_B){
 
@@ -325,7 +325,12 @@ TEST_F(OpcodeTests, DCR_B){
     EXPECT_EQ(cpu.getDE(), 0x0000);
     EXPECT_EQ(cpu.getHL(), 0x0000);
     EXPECT_EQ(cpu.getA(), 0x00);
-    EXPECT_EQ(cpu.getFlags(), 0x02); // Flags: Z=0, S=0, P=0, AC=0, C (unaffected)
+    // Flags: Z=0, S=0, P=0, AC=1, C (unaffected)
+    EXPECT_FALSE(cpu.getFlags() & FLAG_ZERO);
+    EXPECT_FALSE(cpu.getFlags() & FLAG_SIGN);
+    EXPECT_FALSE(cpu.getFlags() & FLAG_PARITY);
+    EXPECT_TRUE(cpu.getFlags() & FLAG_AUX_CARRY);
+    EXPECT_FALSE(cpu.getFlags() & FLAG_CARRY);
     EXPECT_EQ(cpu.getCyc(), 5);
 
 }
@@ -343,11 +348,11 @@ TEST_F(OpcodeTests, DCR_C_ZeroFlag){
     EXPECT_EQ(cpu.getHL(), 0x0000);
     EXPECT_EQ(cpu.getA(), 0x00);
     
-    // Flags: Z=1, S=0, P=1, AC=0, C (unaffected)
+    // Flags: Z=1, S=0, P=1, AC=1, C (unaffected)
     EXPECT_TRUE(cpu.getFlags() & FLAG_ZERO);
     EXPECT_FALSE(cpu.getFlags() & FLAG_SIGN);
     EXPECT_TRUE(cpu.getFlags() & FLAG_PARITY);
-    EXPECT_FALSE(cpu.getFlags() & FLAG_AUX_CARRY);
+    EXPECT_TRUE(cpu.getFlags() & FLAG_AUX_CARRY);
     EXPECT_FALSE(cpu.getFlags() & FLAG_CARRY);
 
     EXPECT_EQ(cpu.getCyc(), 5);
@@ -367,11 +372,11 @@ TEST_F(OpcodeTests, DCR_D_SignFlag){
     EXPECT_EQ(cpu.getHL(), 0x0000);
     EXPECT_EQ(cpu.getA(), 0x00);
     
-    // Flags: Z=0, S=1, P=0, AC=0, C (unaffected)
+    // Flags: Z=0, S=1, P=0, AC=1, C (unaffected)
     EXPECT_FALSE(cpu.getFlags() & FLAG_ZERO);
     EXPECT_TRUE(cpu.getFlags() & FLAG_SIGN);
     EXPECT_FALSE(cpu.getFlags() & FLAG_PARITY);
-    EXPECT_FALSE(cpu.getFlags() & FLAG_AUX_CARRY);
+    EXPECT_TRUE(cpu.getFlags() & FLAG_AUX_CARRY);
     EXPECT_FALSE(cpu.getFlags() & FLAG_CARRY);
 
     EXPECT_EQ(cpu.getCyc(), 5);
@@ -391,11 +396,11 @@ TEST_F(OpcodeTests, DCR_E_ParityFlag){
     EXPECT_EQ(cpu.getHL(), 0x0000);
     EXPECT_EQ(cpu.getA(), 0x00);
     
-    // Flags: Z=0, S=0, P=1, AC=0, C (unaffected)
+    // Flags: Z=0, S=0, P=1, AC=1, C (unaffected)
     EXPECT_FALSE(cpu.getFlags() & FLAG_ZERO);
     EXPECT_FALSE(cpu.getFlags() & FLAG_SIGN);
     EXPECT_TRUE(cpu.getFlags() & FLAG_PARITY);
-    EXPECT_FALSE(cpu.getFlags() & FLAG_AUX_CARRY);
+    EXPECT_TRUE(cpu.getFlags() & FLAG_AUX_CARRY);
     EXPECT_FALSE(cpu.getFlags() & FLAG_CARRY);
 
     EXPECT_EQ(cpu.getCyc(), 5);
@@ -415,11 +420,11 @@ TEST_F(OpcodeTests, DCR_H_AuxiliaryFlag){
     EXPECT_EQ(cpu.getHL(), 0x1F00);     // H = 0x0F after decrementing
     EXPECT_EQ(cpu.getA(), 0x00);
     
-    // Flags: Z=0, S=0, P=0, AC=1, C (unaffected)
+    // Flags: Z=0, S=0, P=0, AC=0, C (unaffected)
     EXPECT_FALSE(cpu.getFlags() & FLAG_ZERO);
     EXPECT_FALSE(cpu.getFlags() & FLAG_SIGN);
     EXPECT_FALSE(cpu.getFlags() & FLAG_PARITY);
-    EXPECT_TRUE(cpu.getFlags() & FLAG_AUX_CARRY);
+    EXPECT_FALSE(cpu.getFlags() & FLAG_AUX_CARRY);
     EXPECT_FALSE(cpu.getFlags() & FLAG_CARRY);
 
     EXPECT_EQ(cpu.getCyc(), 5);
@@ -440,11 +445,11 @@ TEST_F(OpcodeTests, DCR_L_CarryFlag){
     EXPECT_EQ(cpu.getHL(), 0x007E);     // L = 0x7F after decrementing
     EXPECT_EQ(cpu.getA(), 0x00);
     
-    // Flags: Z=0, S=0, P=1, AC=0, C=1 (unaffected)
+    // Flags: Z=0, S=0, P=1, AC=1, C=1 (unaffected)
     EXPECT_FALSE(cpu.getFlags() & FLAG_ZERO);
     EXPECT_FALSE(cpu.getFlags() & FLAG_SIGN);
     EXPECT_TRUE(cpu.getFlags() & FLAG_PARITY);
-    EXPECT_FALSE(cpu.getFlags() & FLAG_AUX_CARRY);
+    EXPECT_TRUE(cpu.getFlags() & FLAG_AUX_CARRY);
     EXPECT_TRUE(cpu.getFlags() & FLAG_CARRY);
 
     EXPECT_EQ(cpu.getCyc(), 5);
@@ -470,11 +475,11 @@ TEST_F(OpcodeTests, DCR_M){
 
     EXPECT_EQ(hal.read_byte(memory_addr), 0x7F);
 
-    // Flags: Z=0, S=0, P=0, AC=1, C=1 (unaffected)
+    // Flags: Z=0, S=0, P=0, AC=0, C=1 (unaffected)
     EXPECT_FALSE(cpu.getFlags() & FLAG_ZERO);
     EXPECT_FALSE(cpu.getFlags() & FLAG_SIGN);
     EXPECT_FALSE(cpu.getFlags() & FLAG_PARITY);
-    EXPECT_TRUE(cpu.getFlags() & FLAG_AUX_CARRY);
+    EXPECT_FALSE(cpu.getFlags() & FLAG_AUX_CARRY);
     EXPECT_TRUE(cpu.getFlags() & FLAG_CARRY);
 
     EXPECT_EQ(cpu.getCyc(), 10);
@@ -493,7 +498,12 @@ TEST_F(OpcodeTests, DCR_A){
     EXPECT_EQ(cpu.getDE(), 0x0000);
     EXPECT_EQ(cpu.getHL(), 0x0000);
     EXPECT_EQ(cpu.getA(), 0x01);        // A decrements
-    EXPECT_EQ(cpu.getFlags(), 0x02);    // Flags: Z=0, S=0, P=0, AC=0, C (unaffected)
+    // Flags: Z=0, S=0, P=0, AC=1, C (unaffected)
+    EXPECT_FALSE(cpu.getFlags() & FLAG_ZERO);
+    EXPECT_FALSE(cpu.getFlags() & FLAG_SIGN);
+    EXPECT_FALSE(cpu.getFlags() & FLAG_PARITY);
+    EXPECT_TRUE(cpu.getFlags() & FLAG_AUX_CARRY);
+    EXPECT_FALSE(cpu.getFlags() & FLAG_CARRY);
     EXPECT_EQ(cpu.getCyc(), 5);
 
 }

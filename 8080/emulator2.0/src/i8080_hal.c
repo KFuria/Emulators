@@ -23,7 +23,7 @@ int load_file_into_Mem(const char * filename, uint16_t addr){
     fseek(f, 0, SEEK_END);
     size_t fsize = ftell(f);
     rewind(f);
-    printf("File size: %ld\n", fsize);
+    printf("File size: %lld\n", fsize);
 
     if(fsize + addr >= MEM_SIZE){
         fprintf(stderr, "error: file %s can't fit in memory.\n", filename);
@@ -61,10 +61,13 @@ void iMem_write_byte(uint16_t addr, uint8_t byte){
 
 
 uint8_t i8080_hal_io_input(void * cpu_pointer, uint8_t port) {
+    (void) cpu_pointer;
+    (void) port;
     return 0;
 }
 
 void i8080_hal_io_output(void * cpu_pointer, uint8_t port, uint8_t value) {
+    (void) value;
     i8080 * const cpu = (i8080*) cpu_pointer;
     if (port == 1) {
         if (cpu->c == 2) { // print a character stored in register E

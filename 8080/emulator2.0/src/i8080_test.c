@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdbool.h>
-#include "utils.c"
+#include "i8080_helper.h"
 #include "i8080dis.h"
 #include "i8080.h"
 #include "i8080_hal.h"
@@ -32,7 +32,7 @@ static void run_test(i8080 * const cpu, const char * filename){
     mem[0x0006] = 0x01;
     mem[0x0007] = 0xC9;
 
-    unsigned long num_instructions = 0;
+    unsigned long long num_instructions = 0;
     while (1) {
         int const pc = cpu->pc;
         // if HLT exit test
@@ -52,7 +52,7 @@ static void run_test(i8080 * const cpu, const char * filename){
         // End of test
         if(cpu->pc == 0){
             printf("\nJump to 0000 from %04X: %02X\n", pc, mem[pc]);
-            printf("Number of Instructions executed: %ld\n", num_instructions);
+            printf("Number of Instructions executed: %lld\n", num_instructions);
             printf("***************************************************\n\n\n");
             return;
         }

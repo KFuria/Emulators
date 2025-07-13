@@ -7,7 +7,6 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <format>
 
 #include "logger.h"
 #include "i8080_hal.h"
@@ -21,7 +20,7 @@
 #define TEST_BUILD 1
 
 class T8080{
-public:
+public: 
     T8080();
     ~T8080();
     int disassembleOp(int pc);
@@ -30,7 +29,6 @@ public:
     void step();
     void execute(uint8_t op);
 
-    
     // Public getters and setters for PC and SP
     void setPC(uint16_t addr);
     void setSP(uint16_t addr);
@@ -53,8 +51,11 @@ public:
     uint16_t getHL() const { return get_hl(); }
     uint16_t getPSW() const { return get_psw(); }
 
+    bool is_halted() const{ return halted;} 
+
     // cycle count
     unsigned long getCyc() const { return cyc; }
+
 
 #ifdef TEST_BUILD // Include only when testing and debugging
     // Setters for individual 8-bit registers (Only for test setup)
@@ -84,13 +85,14 @@ private:
     uint8_t A, B, C, D, E, H, L;
     uint8_t F; // (S, Z, 0, AC, 0, P, 1, C)
 
-    // Interrupt
-    bool iff : 1;
+    // Interrupts
+    bool INTE : 1;
     bool interrupt_pending : 1;
     uint8_t interrupt_vector;
     uint8_t interrupt_delay;
+    void set_interrupt(uint8_t opcode);
 
-    bool halted : 1; 
+    bool halted : 1;
     unsigned long cyc;
 
     T8080Hal * hal;
@@ -120,6 +122,10 @@ private:
     bool get_flag(uint8_t flag_mask) const;
     void set_szp(uint8_t val);
 
+    // Push and Pop helper methods
+    void push_word(uint16_t val);
+    uint16_t pop_word();
+
     // Opcode Instructions
     uint8_t nop(uint8_t);
     uint8_t lxi(uint8_t);
@@ -146,7 +152,9 @@ private:
     uint8_t mov(uint8_t);
     uint8_t hlt(uint8_t);
     uint8_t add(uint8_t);
+    uint8_t adc(uint8_t);
     uint8_t sub(uint8_t);
+    uint8_t sbb(uint8_t);
     uint8_t ana(uint8_t);
     uint8_t xra(uint8_t);
     uint8_t ora(uint8_t);
@@ -191,8 +199,8 @@ private:
     &T8080::mov, &T8080::mov, &T8080::mov,  &T8080::mov,  &T8080::mov, &T8080::mov,  &T8080::mov, &T8080::mov, &T8080::mov, &T8080::mov, &T8080::mov,  &T8080::mov,  &T8080::mov, &T8080::mov, &T8080::mov, &T8080::mov,
     &T8080::mov, &T8080::mov, &T8080::mov,  &T8080::mov,  &T8080::mov, &T8080::mov,  &T8080::hlt, &T8080::mov, &T8080::mov, &T8080::mov, &T8080::mov,  &T8080::mov,  &T8080::mov, &T8080::mov, &T8080::mov, &T8080::mov,
     
-    &T8080::add, &T8080::add, &T8080::add,  &T8080::add,  &T8080::add, &T8080::add,  &T8080::add, &T8080::add, &T8080::add, &T8080::add, &T8080::add,  &T8080::add,  &T8080::add, &T8080::add, &T8080::add, &T8080::add,
-    &T8080::sub, &T8080::sub, &T8080::sub,  &T8080::sub,  &T8080::sub, &T8080::sub,  &T8080::sub, &T8080::sub, &T8080::sub, &T8080::sub, &T8080::sub,  &T8080::sub,  &T8080::sub, &T8080::sub, &T8080::sub, &T8080::sub,
+    &T8080::add, &T8080::add, &T8080::add,  &T8080::add,  &T8080::add, &T8080::add,  &T8080::add, &T8080::add, &T8080::adc, &T8080::adc, &T8080::adc,  &T8080::adc,  &T8080::adc, &T8080::adc, &T8080::adc, &T8080::adc,
+    &T8080::sub, &T8080::sub, &T8080::sub,  &T8080::sub,  &T8080::sub, &T8080::sub,  &T8080::sub, &T8080::sub, &T8080::sbb, &T8080::sbb, &T8080::sbb,  &T8080::sbb,  &T8080::sbb, &T8080::sbb, &T8080::sbb, &T8080::sbb,
     &T8080::ana, &T8080::ana, &T8080::ana,  &T8080::ana,  &T8080::ana, &T8080::ana,  &T8080::ana, &T8080::ana, &T8080::xra, &T8080::xra, &T8080::xra,  &T8080::xra,  &T8080::xra, &T8080::xra, &T8080::xra, &T8080::xra,
     &T8080::ora, &T8080::ora, &T8080::ora,  &T8080::ora,  &T8080::ora, &T8080::ora,  &T8080::ora, &T8080::ora, &T8080::cmp, &T8080::cmp, &T8080::cmp,  &T8080::cmp,  &T8080::cmp, &T8080::cmp, &T8080::cmp, &T8080::cmp,
 

@@ -1,3 +1,6 @@
+#ifndef __I8080_HELPER_H__
+#define __I8080_HELPER_H__
+
 #include "i8080.h"
 
 static const uint8_t OPCODES_CYCLES[256] = {
@@ -62,11 +65,6 @@ static inline bool parity(uint8_t val){
     return (num1 & 1) == 0;
 }
 
-static inline bool carry(uint8_t pos, uint8_t a, uint8_t b, bool cy){
-    uint16_t res = a + b + cy;
-    uint16_t carry = res ^ a ^ b;
-    return carry & (1 << pos);
-}
 
 //sets zero, sign and parity flags based on val
 static inline void set_szp(i8080 * const cpu, uint8_t val){
@@ -168,6 +166,13 @@ static inline void i8080_pop_psw(i8080 * const cpu){
 
 
 //-------------------------ARITHMETIC LOGICAL INSTRUCTIONS-------------------------//
+
+static bool carry(uint8_t pos, uint8_t a, uint8_t b, bool cy){
+    uint16_t res = a + b + cy;
+    uint16_t carry = res ^ a ^ b;
+    return carry & (1 << pos);
+}
+
 
 // add  value to register A
 static inline void i8080_add(i8080* const cpu, uint8_t val, bool cy) {
@@ -327,3 +332,5 @@ static inline void i8080_ret_cond(i8080 * const cpu, bool condition){
     cpu->cyc += 6; //additional cycles used to jump if condition met
   }
 }
+
+#endif

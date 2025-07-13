@@ -1,4 +1,4 @@
-#include "test_fixture.h"
+#include "opcodes_test.h"
 
 
 T8080 OpcodeTests::cpu;

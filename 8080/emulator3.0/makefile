@@ -28,7 +28,7 @@ DIS         := $(OUT_DIR)/$(OUT_NAME).dasm
 
 # Compiler
 CXX         := g++
-OPT         := -O3
+OPT         := -O0
 
 # Source Directories
 SRC_DIR     := src
@@ -56,6 +56,7 @@ TEST_SOURCES := $(TEST_DIR)/main_test.cpp \
 				$(TEST_DIR)/logical_opcodes_test.cpp \
 				$(TEST_DIR)/other_opcodes_test.cpp
 
+ROM_TEST_SOURCE := $(SRC_DIR)/main.cpp
 			
 #-----------------------------------------------------------------------------
 # Object Files
@@ -71,7 +72,8 @@ OBJS        := $(ASM_OBJS) $(C_OBJS) $(CPP_OBJS)
 # Object files for tests
 TEST_OBJS   := $(patsubst $(TEST_DIR)/%.cpp,$(OUT_DIR)/%.o,$(TEST_SOURCES))
 
-
+# Object file for ROM tests
+ROM_TEST_OBJ := $(patsubst $(SRC_DIR)/%.cpp,$(OUT_DIR)/%.o,$(ROM_TEST_SOURCE))
 
 #-----------------------------------------------------------------------------
 # Compilation Flags
@@ -98,12 +100,12 @@ TEST_DEBUG_FLAGS := $(CXXFLAGS) $(INCLUDE_PATHS) -DTEST_BUILD
 # Targets
 #-----------------------------------------------------------------------------
 
-.PHONY: all clean directory
+.PHONY: rom_test test test_opcode clean directory
 
-all: directory $(MAIN)
+rom_test: directory $(MAIN)
 
-$(MAIN): $(OBJS)
-	$(CXX) $(LDFLAGS) -o $@ $(OBJS) $(RELEASE_FLAGS) $(LIBS)
+$(MAIN): $(OBJS) $(ROM_TEST_OBJ)
+	$(CXX) $(LDFLAGS) -o $@ $(OBJS) $(ROM_TEST_OBJ) $(RELEASE_FLAGS) $(LIBS)
 
 # Rule for compiling C++ source files
 $(OUT_DIR)/%.o: $(SRC_DIR)/%.cpp
@@ -122,6 +124,9 @@ $(OUT_DIR)/%.o: $(TEST_DIR)/%.cpp
 	$(CXX) $(TEST_DEBUG_FLAGS) -c $< -o $@
 
 
+#-----------------------------------------------------------------------------
+
+
 # Target for building and running all tests
 TEST_EXE := $(OUT_DIR)/test_runner
 
@@ -132,6 +137,8 @@ test: directory $(TEST_EXE)
 $(TEST_EXE): $(OBJS) $(TEST_OBJS)
 	$(CXX) $(LDFLAGS) -o $@ $(OBJS) $(TEST_OBJS) $(TEST_DEBUG_FLAGS) $(LIBS) $(TEST_LIBS)
 
+
+#-----------------------------------------------------------------------------
 
 # Define FILTER as an empty string by default
 OPCODE ?= 
@@ -146,7 +153,7 @@ else
     GTEST_FILTER_ARG = --gtest_filter=OpcodeTests.$(OPCODE)*
 endif
 
-# Target for building and running specific opcode tests, now using FILTER variable
+# Target for building and running specific opcode tests, using FILTER variable
 OPCODE_TEST_EXE  := $(OUT_DIR)/opcode_test_runner
 
 test_opcode: directory $(OPCODE_TEST_EXE)
@@ -157,13 +164,15 @@ $(OPCODE_TEST_EXE): $(OBJS) $(TEST_OBJS) # Link all test object files here for t
 	$(CXX) $(LDFLAGS) -o $@ $(OBJS) $(TEST_OBJS) $(TEST_DEBUG_FLAGS) $(LIBS) $(TEST_LIBS)
 
 
+#-----------------------------------------------------------------------------
+
 # Create the output directory if it doesn't exist
 directory:
 	@mkdir -p $(OUT_DIR)
 
 clean:
 	@echo "Cleaning project..."
-	$(RM) $(OBJS) $(TEST_OBJS) $(MAIN) $(TEST_EXE) $(OPCODE_TEST_EXE)
+	$(RM) $(OBJS) $(TEST_OBJS) $(MAIN) $(TEST_EXE) $(OPCODE_TEST_EXE) $(ROM_TEST_OBJ)
 	@echo "Clean complete."
 
 # End of Makefile

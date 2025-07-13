@@ -25,7 +25,7 @@ void T8080::reset(){
 	set_hl(0x00);
 	set_psw(0x0002);
 
-	iff = 0;
+	INTE = 0;
 	interrupt_delay = 0;
 	interrupt_pending = 0;
 	interrupt_vector = 0;
@@ -34,10 +34,15 @@ void T8080::reset(){
 	cyc = 0;
 }
 
+void T8080::set_interrupt(uint8_t opcode){
+	interrupt_pending = 1;
+	interrupt_vector = opcode;
+}
+
 void T8080::step(){
-	if(interrupt_pending && iff && interrupt_delay == 0){
+	if(interrupt_pending && INTE && interrupt_delay == 0){
 		interrupt_pending = 0;
-		iff = 0;
+		INTE = 0;
 		halted = 0;
 		execute(interrupt_vector);
 	}else if(!halted){
@@ -49,4 +54,3 @@ void T8080::execute(uint8_t op){
 	InstructionFunc v = instruction_set[op];
 	cyc += (this->*v)(op);
 }
-

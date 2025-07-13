@@ -1,5 +1,5 @@
 #include "i8080.h"
-#include "utils.c"
+#include "i8080_helper.h"
 
 
 i8080 * i8080_init(void){
